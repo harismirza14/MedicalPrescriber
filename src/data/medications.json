@@ -24,7 +24,7 @@
     "controlledSubstances": true
   },
   "pharmaciesByZip": {
-    "22903": [
+    "22": [
       {
         "id": 1,
         "name": "CVS/pharmacy #1556",
@@ -47,7 +47,7 @@
         "hours": "9am - 9pm"
       }
     ],
-    "06001": [
+    "00": [
       {
         "id": 101,
         "name": "CVS/pharmacy #1180",
@@ -71,7 +71,7 @@
       }
     ]
   },
-    "medicationList": [
+  "medicationList": [
     "Abilify",
     "Acamprosate - Generic",
     "Acyclovir",
@@ -86,7 +86,15 @@
     "Anafranil",
     "Antabuse"
   ],
-  
+  "doseOptions": [
+    "10mg",
+    "25mg",
+    "50mg",
+    "75mg",
+    "100mg",
+    "150mg",
+    "200mg"
+  ],
   "initialMedications": [
     {
       "id": 1,
@@ -138,5 +146,4 @@
       "patientNote": "The patient reported that Xanax helped quickly reduce acute anxiety, but may be leading to sedation and concerns about dependence."
     }
   ]
-  
 }

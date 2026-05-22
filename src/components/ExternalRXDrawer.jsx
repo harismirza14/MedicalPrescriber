@@ -1,32 +1,16 @@
-import React, { useState, useMemo } from 'react';
-import allData from '../data/medications.json';
+import React, { useState } from 'react';
 
 export default function ExternalRxDrawer({ isOpen, onClose, onSubmit }) {
-  const [drugSearch, setDrugSearch] = useState('');
   const [selectedDrug, setSelectedDrug] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [drugInfo, setDrugInfo] = useState('');
   const [externalPrescriber, setExternalPrescriber] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const medicationList = allData.medicationList || [];
-
-  const suggestions = useMemo(() => {
-    if (!drugSearch.trim()) return [];
-    return medicationList.filter(m =>
-      m.toLowerCase().includes(drugSearch.toLowerCase())
-    );
-  }, [drugSearch]);
-
-  const handleSelectDrug = (med) => {
-    setSelectedDrug(med);
-    setDrugSearch(med);
-    setShowSuggestions(false);
-  };
-
   const handleSubmit = () => {
     setSubmitted(true);
-    if (!selectedDrug) return;
+    
+    // Only proceed if drug name is not just whitespace
+    if (!selectedDrug.trim()) return;
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -54,25 +38,17 @@ export default function ExternalRxDrawer({ isOpen, onClose, onSubmit }) {
   };
 
   const handleClose = () => {
-    setDrugSearch('');
     setSelectedDrug('');
     setDrugInfo('');
     setExternalPrescriber('');
     setSubmitted(false);
-    setShowSuggestions(false);
     onClose();
   };
 
   if (!isOpen) return null;
 
-  const isDrugMissing = submitted && !selectedDrug;
-
-  const inputCls = (hasError) =>
-    `w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
-      hasError
-        ? 'border-red-400 focus:ring-red-400'
-        : 'border-gray-300 focus:ring-blue-500'
-    }`;
+  // Error condition: show red styles/text if user submitted while field was empty
+  const hasError = submitted && !selectedDrug.trim();
 
   return (
     <>
@@ -98,60 +74,26 @@ export default function ExternalRxDrawer({ isOpen, onClose, onSubmit }) {
         {/* Form */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
 
-          {/* Drug Name */}
+          {/* Drug Name - Manual Entry */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-sm font-semibold text-gray-700">Drug Name</label>
-              {isDrugMissing && (
+              {hasError && (
                 <span className="text-xs font-medium text-red-500">Required</span>
               )}
-              {!isDrugMissing && (
-                <span className="text-xs font-medium text-red-400">Required</span>
-              )}
             </div>
 
-            {/* Search input with dropdown */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for a medication"
-                value={drugSearch}
-                onChange={e => {
-                  setDrugSearch(e.target.value);
-                  setSelectedDrug('');
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                className={inputCls(isDrugMissing)}
-              />
-
-              {/* Suggestions dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
-                  {suggestions.map(med => (
-                    <div
-                      key={med}
-                      onMouseDown={() => handleSelectDrug(med)}
-                      className={`px-3 py-2.5 text-sm cursor-pointer transition-colors ${
-                        selectedDrug === med
-                          ? 'bg-blue-50 text-blue-700 font-medium'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {med}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* No results */}
-              {showSuggestions && drugSearch.trim() && suggestions.length === 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 px-3 py-3 text-sm text-gray-400">
-                  No medications found
-                </div>
-              )}
-            </div>
+            <input
+              type="text"
+              placeholder="Enter medication name"
+              value={selectedDrug}
+              onChange={(e) => setSelectedDrug(e.target.value)}
+              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                hasError 
+                  ? 'border-red-400 focus:ring-red-400' 
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            />
           </div>
 
           {/* Drug Information */}
