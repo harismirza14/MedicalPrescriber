@@ -14,17 +14,30 @@ export default function Medications() {
 
   const [showModal, setShowModal] = useState(false);
   const [showAddRx, setShowAddRx] = useState(false);
+  const [editingMedication, setEditingMedication] = useState(null);
 
   const handleDiscontinue = (medId, reason, date) => {
     setMedications(prevMeds =>
       prevMeds.map(med =>
         med.id === medId
+          ? { ...med, status: 'discontinued', discontinuedOn: date, discontinueReason: reason, statusLabel: '' }
+          : med
+      )
+    );
+  };
+
+  const handleRecontinue = (medId, reason, date) => {
+    setMedications(prevMeds =>
+      prevMeds.map(med =>
+        med.id === medId
           ? {
               ...med,
-              status: 'discontinued',
-              discontinuedOn: date,
-              discontinueReason: reason,
-              statusLabel: '',
+              status: 'success',
+              statusLabel: 'Active',
+              recontinueReason: reason,
+              recontinuedOn: date,
+              discontinueReason: undefined,
+              discontinuedOn: undefined,
             }
           : med
       )
@@ -33,20 +46,32 @@ export default function Medications() {
 
   const handleUpdate = (medId, updates) => {
     setMedications(prevMeds =>
-      prevMeds.map(med =>
-        med.id === medId ? { ...med, ...updates } : med
-      )
+      prevMeds.map(med => (med.id === medId ? { ...med, ...updates } : med))
     );
   };
 
+  const handleEditMedication = (med) => {
+    setEditingMedication(med);
+    setShowAddRx(true);
+  };
+
   const handleMedicationAdded = (newMed) => {
-    setMedications(prev => [newMed, ...prev]);
+    if (editingMedication) {
+      setMedications(prev =>
+        prev.map(m => (m.id === editingMedication.id ? { ...newMed, id: editingMedication.id } : m))
+      );
+    } else {
+      setMedications(prev => [newMed, ...prev]);
+    }
+  };
+
+  const handleAddRxClose = () => {
+    setShowAddRx(false);
+    setEditingMedication(null);
   };
 
   return (
-    <div className=" px-10 py-6">
-
-      {/* Header row */}
+    <div className="px-10 py-6">
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-2xl font-bold text-gray-800">Medications</h1>
         <button
@@ -58,15 +83,15 @@ export default function Medications() {
         </button>
       </div>
 
-<div className="flex flex-col md:flex-row bg-white rounded-2xl p-5 mb-6">
-  <div className="flex-1  border-gray-200 pr-5">
-    <PDMPCard pdmp={pdmpData} />
-  </div>
-  <div className="w-1/3 pl-5">
-    <PharmacyCard pharmacy={pharmacyData} />
-  </div>
-</div>
-      {/* Medication cards list */}
+      <div className="flex flex-col md:flex-row bg-white rounded-2xl p-5 mb-6">
+        <div className="flex-1 border-gray-200 pr-5">
+          <PDMPCard pdmp={pdmpData} />
+        </div>
+        <div className="w-1/3 pl-5">
+          <PharmacyCard pharmacy={pharmacyData} />
+        </div>
+      </div>
+
       <div className="flex flex-col gap-3">
         {medications.map(med => (
           <MedicationCard
@@ -74,7 +99,9 @@ export default function Medications() {
             med={med}
             patient={patient}
             onDiscontinue={handleDiscontinue}
+            onRecontinue={handleRecontinue}
             onUpdate={handleUpdate}
+            onEdit={handleEditMedication}
           />
         ))}
       </div>
@@ -86,6 +113,7 @@ export default function Medications() {
           onAdd={handleMedicationAdded}
           onOpenSendRx={() => {
             setShowModal(false);
+            setEditingMedication(null);
             setShowAddRx(true);
           }}
         />
@@ -93,8 +121,21 @@ export default function Medications() {
 
       <AddRX
         isOpen={showAddRx}
-        onClose={() => setShowAddRx(false)}
+        onClose={handleAddRxClose}
         onMedicationAdded={handleMedicationAdded}
+        initialData={editingMedication ? {
+          id:             editingMedication.id,
+          drug:           editingMedication.name,
+          dosage:         editingMedication.dosage,
+          instructions:   editingMedication.instructions,
+          quantity:       editingMedication.quantity,
+          frequency:      editingMedication.frequency,
+          duration:       editingMedication.duration,
+          dispenseAmount: editingMedication.dispenseAmount,
+          diagnoses:      editingMedication.diagnoses,
+          refills:        editingMedication.refills,
+          pharmacy:       editingMedication.pharmacy,
+        } : null}
       />
     </div>
   );
