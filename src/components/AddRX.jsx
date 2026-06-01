@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import allData from "../data/medications.json";
-import { useBodyScrollLock } from "../layouts/BodyScrollLock";
+// import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 
 const MEDICATION_LIST = allData.medicationList;
 const DOSE_OPTIONS    = allData.doseOptions;
 const PHARMACY_DATA   = allData.pharmaciesByZip;
-const DEFAULT_ZIP     = "22903";
+const DEFAULT_ZIP     = "22";
 
 // ─── Step Indicator ───────────────────────────────────────────────────────────
 function StepIndicator({ currentStep }) {
@@ -525,7 +525,7 @@ export default function AddRx({
   onMedicationAdded,
   initialData = null,
 }) {
-   useBodyScrollLock(isOpen); 
+  //  useBodyScrollLock(isOpen); 
   const isEditMode = !!initialData;
 
   const [step, setStep]               = useState(1);

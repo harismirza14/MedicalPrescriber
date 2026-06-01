@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useBodyScrollLock } from "../layouts/BodyScrollLock";
+// import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 export default function MedicationActionDrawer({
   isOpen,
   onClose,
@@ -9,7 +9,7 @@ export default function MedicationActionDrawer({
   confirmLabel = 'Confirm',
   confirmClassName = 'bg-blue-600 hover:bg-blue-700 text-white',
 }) {
-     useBodyScrollLock(isOpen); 
+    //  useBodyScrollLock(isOpen); 
   const [reason, setReason] = useState('');
   const [date, setDate] = useState('');
   const [touched, setTouched] = useState({ reason: false, date: false });
@@ -31,7 +31,6 @@ export default function MedicationActionDrawer({
   const showDateError   = (isSubmitted || touched.date)   && !date.trim();
 
   const handleClose = () => {
-    // Reset handled by the useEffect on next open; close immediately
     onClose();
   };
 

@@ -1,7 +1,5 @@
-// PharmacyCard.jsx
 import React from "react";
 
-// Small icon helpers to avoid extra dependencies
 function LocationIcon() {
   return (
     <svg className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">

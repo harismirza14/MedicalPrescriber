@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import ExternalRxDrawer from './ExternalRxDrawer';
-import { useBodyScrollLock } from "../layouts/BodyScrollLock";
+// import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 export default function AddMedicationModal({ onClose, onAdd,isOpen, onOpenSendRx }) {
-  useBodyScrollLock(isOpen);
+  // useBodyScrollLock(isOpen);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExternalRx, setShowExternalRx] = useState(false);
 
