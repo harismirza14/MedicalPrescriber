@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+ import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 
 export default function ExternalRxDrawer({ isOpen, onClose, onSubmit }) {
+   useBodyScrollLock(isOpen); 
   const [selectedDrug, setSelectedDrug] = useState('');
   const [drugInfo, setDrugInfo] = useState('');
   const [externalPrescriber, setExternalPrescriber] = useState('');

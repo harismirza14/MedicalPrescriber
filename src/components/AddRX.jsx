@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import allData from "../data/medications.json";
+import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 
 const MEDICATION_LIST = allData.medicationList;
 const DOSE_OPTIONS    = allData.doseOptions;
@@ -524,6 +525,7 @@ export default function AddRx({
   onMedicationAdded,
   initialData = null,
 }) {
+   useBodyScrollLock(isOpen); 
   const isEditMode = !!initialData;
 
   const [step, setStep]               = useState(1);

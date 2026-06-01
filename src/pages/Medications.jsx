@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
-import PDMPCard from '../components/PDMPCard';
-import PharmacyCard from '../components/PharmacyCard';
-import MedicationCard from '../components/MedicationCard';
-import AddMedicationModal from '../components/AddMedicationModal';
-import AddRX from '../components/AddRX';
-import allData from '../data/medications.json';
-
+import React, { useState,useEffect } from "react";
+import PDMPCard from "../components/PDMPCard";
+import PharmacyCard from "../components/PharmacyCard";
+import MedicationCard from "../components/MedicationCard";
+import AddMedicationModal from "../components/AddMedicationModal";
+import AddRX from "../components/AddRX";
+import allData from "../data/medications.json";
+export const useBodyScrollLock = (isLocked) => {
+  useEffect(() => {
+    if (isLocked) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isLocked]);
+};
 export default function Medications() {
   const [medications, setMedications] = useState(allData.initialMedications);
   const patient = allData.patient;
@@ -16,37 +26,44 @@ export default function Medications() {
   const [showAddRx, setShowAddRx] = useState(false);
   const [editingMedication, setEditingMedication] = useState(null);
 
+  
   const handleDiscontinue = (medId, reason, date) => {
-    setMedications(prevMeds =>
-      prevMeds.map(med =>
+    setMedications((prevMeds) =>
+      prevMeds.map((med) =>
         med.id === medId
-          ? { ...med, status: 'discontinued', discontinuedOn: date, discontinueReason: reason, statusLabel: '' }
-          : med
-      )
+          ? {
+              ...med,
+              status: "discontinued",
+              discontinuedOn: date,
+              discontinueReason: reason,  
+              statusLabel: "",
+            }
+          : med,
+      ),
     );
   };
 
   const handleRecontinue = (medId, reason, date) => {
-    setMedications(prevMeds =>
-      prevMeds.map(med =>
+    setMedications((prevMeds) =>
+      prevMeds.map((med) =>
         med.id === medId
           ? {
               ...med,
-              status: 'success',
-              statusLabel: 'Active',
+              status: "success",
+              statusLabel: "Active",
               recontinueReason: reason,
               recontinuedOn: date,
               discontinueReason: undefined,
               discontinuedOn: undefined,
             }
-          : med
-      )
+          : med,
+      ),
     );
   };
 
   const handleUpdate = (medId, updates) => {
-    setMedications(prevMeds =>
-      prevMeds.map(med => (med.id === medId ? { ...med, ...updates } : med))
+    setMedications((prevMeds) =>
+      prevMeds.map((med) => (med.id === medId ? { ...med, ...updates } : med)),
     );
   };
 
@@ -57,11 +74,15 @@ export default function Medications() {
 
   const handleMedicationAdded = (newMed) => {
     if (editingMedication) {
-      setMedications(prev =>
-        prev.map(m => (m.id === editingMedication.id ? { ...newMed, id: editingMedication.id } : m))
+      setMedications((prev) =>
+        prev.map((m) =>
+          m.id === editingMedication.id
+            ? { ...newMed, id: editingMedication.id }
+            : m,
+        ),
       );
     } else {
-      setMedications(prev => [newMed, ...prev]);
+      setMedications((prev) => [newMed, ...prev]);
     }
   };
 
@@ -93,7 +114,7 @@ export default function Medications() {
       </div>
 
       <div className="flex flex-col gap-3">
-        {medications.map(med => (
+        {medications.map((med) => (
           <MedicationCard
             key={med.id}
             med={med}
@@ -115,6 +136,7 @@ export default function Medications() {
             setShowModal(false);
             setEditingMedication(null);
             setShowAddRx(true);
+           
           }}
         />
       )}
@@ -123,19 +145,24 @@ export default function Medications() {
         isOpen={showAddRx}
         onClose={handleAddRxClose}
         onMedicationAdded={handleMedicationAdded}
-        initialData={editingMedication ? {
-          id:             editingMedication.id,
-          drug:           editingMedication.name,
-          dosage:         editingMedication.dosage,
-          instructions:   editingMedication.instructions,
-          quantity:       editingMedication.quantity,
-          frequency:      editingMedication.frequency,
-          duration:       editingMedication.duration,
-          dispenseAmount: editingMedication.dispenseAmount,
-          diagnoses:      editingMedication.diagnoses,
-          refills:        editingMedication.refills,
-          pharmacy:       editingMedication.pharmacy,
-        } : null}
+        
+        initialData={
+          editingMedication
+            ? {
+                id: editingMedication.id,
+                drug: editingMedication.name,
+                dosage: editingMedication.dosage,
+                instructions: editingMedication.instructions,
+                quantity: editingMedication.quantity,
+                frequency: editingMedication.frequency,
+                duration: editingMedication.duration,
+                dispenseAmount: editingMedication.dispenseAmount,
+                diagnoses: editingMedication.diagnoses,
+                refills: editingMedication.refills,
+                pharmacy: editingMedication.pharmacy,
+              }
+            : null
+        }
       />
     </div>
   );

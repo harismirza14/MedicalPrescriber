@@ -1,6 +1,7 @@
 import MedicationActionDrawer from './MedicationActionDrawer';
-
+import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 export default function ReContinueDrawer({ isOpen, onClose, medication, onConfirm }) {
+  useBodyScrollLock(isOpen);
   return (
     <MedicationActionDrawer
       isOpen={isOpen}
