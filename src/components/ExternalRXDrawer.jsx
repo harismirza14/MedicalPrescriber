@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 //  import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 
-export default function ExternalRxDrawer({ isOpen, onClose, onSubmit }) {
+export default function ExternalRxDrawer({ isOpen, onClose, onSubmit, initialData = null }) {
   //  useBodyScrollLock(isOpen); 
   const [selectedDrug, setSelectedDrug] = useState('');
   const [drugInfo, setDrugInfo] = useState('');
   const [externalPrescriber, setExternalPrescriber] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setSelectedDrug(initialData.drug || '');
+        setDrugInfo(initialData.instructions || '');
+        setExternalPrescriber(initialData.externalPrescriber || '');
+      } else {
+        setSelectedDrug('');
+        setDrugInfo('');
+        setExternalPrescriber('');
+      }
+      setSubmitted(false);
+    }
+  }, [isOpen, initialData]);
 
   const handleSubmit = () => {
     setSubmitted(true);
@@ -19,20 +34,20 @@ export default function ExternalRxDrawer({ isOpen, onClose, onSubmit }) {
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
     const newMed = {
-      id: `ext-${Date.now()}`,
+      id: initialData?.id ?? `ext-${Date.now()}`,
       name: selectedDrug,
       dosage: 'Unknown',
       form: null,
-      type: null,
+      type: 'external',
       instructions: drugInfo || null,
       status: 'external',
-      statusLabel: `Recorded ${dateStr} at ${timeStr}`,
+      statusLabel: initialData?.statusLabel ?? `Recorded ${dateStr} at ${timeStr}`,
       prescriber: null,
       pharmacy: null,
       externalPrescriber: externalPrescriber || 'External Prescriber',
-      patientNote: null,
-      discontinuedOn: null,
-      discontinueReason: null,
+      patientNote: initialData?.patientNote ?? null,
+      discontinuedOn: initialData?.discontinuedOn ?? null,
+      discontinueReason: initialData?.discontinueReason ?? null,
     };
 
     onSubmit(newMed);
@@ -62,7 +77,7 @@ export default function ExternalRxDrawer({ isOpen, onClose, onSubmit }) {
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">External RX</h2>
+          <h2 className="text-lg font-bold text-gray-900">{initialData ? 'Edit External RX' : 'External RX'}</h2>
           <button
             onClick={handleClose}
             className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"

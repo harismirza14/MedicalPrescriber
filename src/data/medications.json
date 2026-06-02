@@ -139,7 +139,7 @@
       "name": "Xanax",
       "dosage": "Unknown",
       "form": null,
-      "type": null,
+      "type": "external",
       "instructions": null,
       "status": "external",
       "externalPrescriber": "External Prescriber",
