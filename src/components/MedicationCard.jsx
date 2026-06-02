@@ -78,8 +78,6 @@ export default function MedicationCard({
   patient,
   onDiscontinue,
   onUpdate,
-  onRecontinue,
-  onEdit,
 }) {
   const [showDiscontinueDrawer, setShowDiscontinueDrawer] = useState(false);
   const [showRecontinueDrawer, setShowRecontinueDrawer]   = useState(false);
@@ -96,47 +94,44 @@ export default function MedicationCard({
     };
   }, [med]);
 
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3">
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="font-semibold text-base text-gray-900">{med.name}</h3>
-        <StatusBadge status={med.status} />
-      </div>
+  const PrescriberBlock = () =>
+    prescriberName ? (
+      <div className="flex items-center gap-2">
+        <img
+          src="/Doctor.png"
+          alt="Doctor"
+          className="w-8 h-8 rounded-full object-cover shrink-0"
+        />
+        <div className="flex flex-col items-start gap-1">
+          <p className="text-xs font-medium text-gray-700">{prescriberName}</p>
 
-      <p className="text-xs text-gray-500 mb-2">{subtitle}</p>
-      {med.patientNote && (
-        <p className="text-sm text-gray-600 mb-3">{med.patientNote}</p>
-      )}
-
-      <StatusContent med={med} onOpenUpdate={() => onEdit(med)} />
-
-      {med.status !== "external" && (
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
-          <div className="flex items-center gap-2">
-            <img src="/Doctor.png" alt="Doctor" className="w-8 h-8 rounded-full" />
-            <div>
-              <p className="text-xs font-medium">{prescriberName}</p>
-              <span className="text-[10px] bg-blue-100 text-blue-700 px-2 rounded-full">
-                {prescriberRole}
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <OutlineBtn>Send Refill RX</OutlineBtn>
-            <OutlineBtn onClick={() => onEdit(med)}>Update RX</OutlineBtn>
-
-            {med.status === "discontinued" ? (
-              <OutlineBtn variant="success" onClick={() => setShowRecontinueDrawer(true)}>
-                Recontinue RX
-              </OutlineBtn>
-            ) : (
-              <OutlineBtn variant="danger" onClick={() => setShowDiscontinueDrawer(true)}>
-                Discontinue RX
-              </OutlineBtn>
-            )}
-          </div>
+          <span className="text-[10px] font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border">
+            {prescriberRole}
+          </span>
         </div>
-      )}
+      </div>
+    ) : null;
+
+  // Shared action buttons + prescriber bottom row
+  const CardFooter = ({ showDiscontinue = true }) => (
+    <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
+      <PrescriberBlock />
+      <div className="flex items-center gap-2 ml-auto">
+        <OutlineBtn variant="primary">Send Refill RX</OutlineBtn>
+        <OutlineBtn variant="primary" onClick={() => setShowUpdateDrawer(true)}>
+          Update RX
+        </OutlineBtn>
+        {showDiscontinue && (
+          <OutlineBtn
+            variant="danger"
+            onClick={() => setShowDiscontinueDrawer(true)}
+          >
+            Discontinue RX
+          </OutlineBtn>
+        )}
+      </div>
+    </div>
+  );
 
       {showDiscontinueDrawer && (
         <DisContinueDrawer
@@ -157,4 +152,50 @@ export default function MedicationCard({
       )}
     </div>
   );
+}
+
+  // ── EXTERNAL ──────────────────────────────────────────────
+  if (med.status === "external") {
+    return (
+      <>
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-semibold text-base text-gray-900">
+              {med.name}
+            </h3>
+            <StatusBadge status="external" />
+          </div>
+
+          <p className="text-xs text-gray-500 mb-2">{subtitle}</p>
+
+          {med.patientNote && (
+            <p className="text-sm text-gray-600 mb-3">{med.patientNote}</p>
+          )}
+
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
+            <div className="leading-tight">
+              <p className="text-xs text-black">
+                Prescribed by{" "}
+                <span className="text-black">
+                  {med.externalPrescriber || "External Prescriber"}
+                </span>
+              </p>
+              <p className="text-xs text-gray-400">
+                {med.externalPrescriberId || "Unknown"}
+              </p>
+            </div>
+            <OutlineBtn
+              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              onClick={() => setShowUpdateDrawer(true)}
+            >
+              Update RX
+            </OutlineBtn>
+          </div>
+        </div>
+        <Drawers />
+      </>
+    );
+  }
+
+  return null;
 }
