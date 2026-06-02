@@ -81,6 +81,7 @@ export default function MedicationCard({
   patient,
   onDiscontinue,
   onUpdate,
+  onEdit,
 }) {
   const [showDiscontinueDrawer, setShowDiscontinueDrawer] = useState(false);
   const [showUpdateDrawer, setShowUpdateDrawer] = useState(false);
@@ -127,7 +128,10 @@ export default function MedicationCard({
       <PrescriberBlock />
       <div className="flex items-center gap-2 ml-auto">
         <OutlineBtn variant="primary">Send Refill RX</OutlineBtn>
-        <OutlineBtn variant="primary" onClick={() => setShowUpdateDrawer(true)}>
+        <OutlineBtn 
+          variant="primary" 
+          onClick={() => onEdit ? onEdit(med) : setShowUpdateDrawer(true)}
+        >
           Update RX
         </OutlineBtn>
         {showDiscontinue && (
@@ -353,7 +357,7 @@ if (med.status === "discontinued") {
             </div>
             <OutlineBtn
               className="border-blue-600 text-blue-600 hover:bg-blue-50"
-              onClick={() => setShowUpdateDrawer(true)}
+              onClick={() => onEdit ? onEdit(med) : setShowUpdateDrawer(true)}
             >
               Update RX
             </OutlineBtn>

@@ -4,6 +4,7 @@ import PharmacyCard from '../components/PharmacyCard';
 import MedicationCard from '../components/MedicationCard';
 import AddMedicationModal from '../components/AddMedicationModal';
 import AddRX from '../components/AddRX';
+import ExternalRxDrawer from '../components/ExternalRXDrawer';
 import allData from '../data/medications.json';
 
 export default function Medications() {
@@ -14,6 +15,9 @@ export default function Medications() {
 
   const [showModal, setShowModal] = useState(false);
   const [showAddRx, setShowAddRx] = useState(false);
+  const [showExternalRx, setShowExternalRx] = useState(false);
+  const [externalInitialData, setExternalInitialData] = useState(null);
+  const [editingMedication, setEditingMedication] = useState(null);
 
   const handleDiscontinue = (medId, reason, date) => {
     setMedications(prevMeds =>
@@ -40,7 +44,39 @@ export default function Medications() {
   };
 
   const handleMedicationAdded = (newMed) => {
-    setMedications(prev => [newMed, ...prev]);
+    setMedications(prev => {
+      const existingIndex = prev.findIndex(med => med.id === newMed.id);
+      if (existingIndex >= 0) {
+        // Update existing medication
+        const updated = [...prev];
+        updated[existingIndex] = newMed;
+        return updated;
+      } else {
+        // Add new medication to the beginning
+        return [newMed, ...prev];
+      }
+    });
+  };
+
+  const handleEditMedication = (med) => {
+    setEditingMedication(med);
+    if (med.type === 'external') {
+      setExternalInitialData({
+        id: med.id,
+        drug: med.name,
+        instructions: med.instructions,
+        externalPrescriber: med.externalPrescriber,
+      });
+      setShowExternalRx(true);
+    } else {
+      setShowAddRx(true);
+    }
+  };
+
+  const handleExternalRxClose = () => {
+    setShowExternalRx(false);
+    setExternalInitialData(null);
+    setEditingMedication(null);
   };
 
   return (
@@ -75,6 +111,7 @@ export default function Medications() {
             patient={patient}
             onDiscontinue={handleDiscontinue}
             onUpdate={handleUpdate}
+            onEdit={handleEditMedication}
           />
         ))}
       </div>
@@ -95,6 +132,13 @@ export default function Medications() {
         isOpen={showAddRx}
         onClose={() => setShowAddRx(false)}
         onMedicationAdded={handleMedicationAdded}
+      />
+
+      <ExternalRxDrawer
+        isOpen={showExternalRx}
+        onClose={handleExternalRxClose}
+        onSubmit={handleMedicationAdded}
+        initialData={externalInitialData}
       />
     </div>
   );
