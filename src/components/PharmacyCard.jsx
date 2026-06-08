@@ -28,7 +28,7 @@ function ClockIcon() {
   );
 }
 
-export default function PharmacyCard({ pharmacy }) {
+export default function PharmacyCard({ pharmacy, onEdit }) {
   return (
     <div className="bg-blue-50 p-4 h-full rounded-2xl">
       {/* Header */}
@@ -38,7 +38,7 @@ export default function PharmacyCard({ pharmacy }) {
         </h2>
         <button
           className="text-xs font-medium text-blue-600 hover:underline bg-transparent border-none p-0 cursor-pointer shrink-0 ml-2"
-          onClick={() => console.log("Edit Pharmacy clicked")}
+          onClick={onEdit }
         >
           Edit
         </button>

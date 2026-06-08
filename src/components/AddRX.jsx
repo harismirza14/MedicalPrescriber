@@ -1,35 +1,34 @@
-import { useState, useMemo, useEffect } from "react";
-import allData from "../data/medications.json";
-// import { useBodyScrollLock } from "../layouts/BodyScrollLock";
+import { useState, useMemo, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { addPrescription, updatePrescription, formatStatusLabel } from '../store/MedicationSlice';
+import { fetchMedications, fetchPharmaciesByZip } from '../services/api';
 
-const MEDICATION_LIST = allData.medicationList;
-const DOSE_OPTIONS    = allData.doseOptions;
-const PHARMACY_DATA   = allData.pharmaciesByZip;
-const DEFAULT_ZIP     = "22";
+const DOSE_OPTIONS = ['1 tablet', '2 tablets', '1', '2 capsules', '5 mL', '10 mL'];
+const DEFAULT_ZIP = '22903';
 
-// ─── Step Indicator ───────────────────────────────────────────────────────────
+// ─── Step Indicator ─────────────────────────────────────────
 function StepIndicator({ currentStep }) {
-  const steps = ["Select", "Detail", "Review"];
+  const steps = ['Select', 'Detail', 'Review'];
   return (
     <div className="flex items-center gap-2 mt-1">
       {steps.map((label, i) => {
-        const num      = i + 1;
+        const num = i + 1;
         const isActive = num === currentStep;
-        const isDone   = num < currentStep;
-        const filled   = isActive || isDone;
+        const isDone = num < currentStep;
+        const filled = isActive || isDone;
         return (
           <span key={label} className="flex items-center gap-1.5">
             {i > 0 && <span className="text-gray-300 text-xs">→</span>}
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold leading-none flex-shrink-0 ${
-                filled ? "bg-pink-500 text-white" : "border border-gray-300 text-gray-400"
+                filled ? 'bg-pink-500 text-white' : 'border border-gray-300 text-gray-400'
               }`}
             >
               {num}
             </span>
             <span
               className={`text-sm font-medium ${
-                isActive ? "text-pink-500" : isDone ? "text-gray-700" : "text-gray-400"
+                isActive ? 'text-pink-500' : isDone ? 'text-gray-700' : 'text-gray-400'
               }`}
             >
               {label}
@@ -41,13 +40,12 @@ function StepIndicator({ currentStep }) {
   );
 }
 
-// ─── Step 1: Select ───────────────────────────────────────────────────────────
-function StepSelect({ selectedMed, onSelect, onCancel, onContinue }) {
-  const [search, setSearch] = useState("");
-
+// ─── Step 1: Select (uses array of medication names) ────────
+function StepSelect({ selectedMed, onSelect, onCancel, onContinue, medicationNames }) {
+  const [search, setSearch] = useState('');
   const filtered = useMemo(
-    () => MEDICATION_LIST.filter(m => m.toLowerCase().includes(search.toLowerCase())),
-    [search]
+    () => medicationNames.filter((m) => m.toLowerCase().includes(search.toLowerCase())),
+    [search, medicationNames]
   );
 
   return (
@@ -57,25 +55,24 @@ function StepSelect({ selectedMed, onSelect, onCancel, onContinue }) {
           type="text"
           placeholder="Search"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
-
       <div className="flex-1 overflow-y-auto px-6 space-y-1 min-h-0">
-        {filtered.map(med => {
+        {filtered.map((med) => {
           const isSelected = selectedMed === med;
           return (
             <label
               key={med}
               onClick={() => onSelect(med)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer border transition-colors ${
-                isSelected ? "bg-blue-50 border-blue-200" : "bg-white border-transparent hover:bg-gray-50"
+                isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white border-transparent hover:bg-gray-50'
               }`}
             >
               <div
                 className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                  isSelected ? "border-blue-600 bg-blue-600" : "border-gray-400 bg-white"
+                  isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-400 bg-white'
                 }`}
               >
                 {isSelected && (
@@ -92,16 +89,13 @@ function StepSelect({ selectedMed, onSelect, onCancel, onContinue }) {
           <p className="text-sm text-gray-400 text-center py-8">No medications found</p>
         )}
       </div>
-
       <div className="px-6 pt-4 pb-5 border-t border-gray-100 flex items-center justify-between mt-auto">
-        <button onClick={onCancel} className="text-sm font-medium text-blue-500 hover:text-blue-600">
-          Cancel
-        </button>
+        <button onClick={onCancel} className="text-sm font-medium text-blue-500 hover:text-blue-600">Cancel</button>
         <button
           onClick={onContinue}
           disabled={!selectedMed}
           className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
-            selectedMed ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            selectedMed ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >
           Continue
@@ -111,49 +105,30 @@ function StepSelect({ selectedMed, onSelect, onCancel, onContinue }) {
   );
 }
 
-// ─── Step 2: Detail ───────────────────────────────────────────────────────────
-function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, isEditMode }) {
-  const handleChange = (field, value) =>
-    setFormData(prev => ({ ...prev, [field]: value }));
-
-  const [drugSearch, setDrugSearch]     = useState(formData.drug || selectedMed || "");
+// ─── Step 2: Detail (uses array of medication names) ────────
+function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, isEditMode, medicationNames }) {
+  const handleChange = (field, value) => setFormData((prev) => ({ ...prev, [field]: value }));
+  const [drugSearch, setDrugSearch] = useState(formData.drug || selectedMed || '');
   const [showDrugList, setShowDrugList] = useState(false);
 
   useEffect(() => {
-    setDrugSearch(formData.drug || selectedMed || "");
+    setDrugSearch(formData.drug || selectedMed || '');
   }, [formData.drug, selectedMed]);
 
-  const filteredDrugs = useMemo(
-    () =>
-      drugSearch.trim()
-        ? MEDICATION_LIST.filter(m =>
-            m.toLowerCase().includes(drugSearch.toLowerCase())
-          ).slice(0, 8)
-        : [],
-    [drugSearch]
-  );
+  const filteredDrugs = useMemo(() => {
+    if (!drugSearch.trim()) return [];
+    return medicationNames
+      .filter((m) => m.toLowerCase().includes(drugSearch.toLowerCase()))
+      .slice(0, 8);
+  }, [drugSearch, medicationNames]);
 
-  // FIX 2: No validation against MEDICATION_LIST — any typed value is valid.
-  // The Continue button is always enabled as long as drugSearch is non-empty.
   const canContinue = drugSearch.trim().length > 0;
-
-  const inputCls = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white";
-  const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+  const inputCls = 'w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white';
+  const labelCls = 'block text-sm font-medium text-gray-700 mb-1';
 
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="flex-1 overflow-y-auto px-6 pb-3 min-h-0 space-y-4">
-
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-gray-800">
-            {formData.drug || selectedMed || "New Medication"}
-          </span>
-          <span className="text-xs font-medium text-pink-500">
-            {isEditMode ? "Editing" : "In progress"}
-          </span>
-        </div>
-
-        {/* Drug — autocomplete with clear button (FIX 2 + FIX 3) */}
         <div className="relative">
           <label className={labelCls}>Drug</label>
           <div className="relative">
@@ -161,28 +136,25 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
               type="text"
               placeholder="Search for a drug"
               value={drugSearch}
-              onChange={e => {
+              onChange={(e) => {
                 setDrugSearch(e.target.value);
-                handleChange("drug", e.target.value);
+                handleChange('drug', e.target.value);
                 setShowDrugList(true);
               }}
               onFocus={() => setShowDrugList(true)}
               onBlur={() => setTimeout(() => setShowDrugList(false), 150)}
-              // FIX 2: pr-8 makes room for the × button; no other restriction
               className={`${inputCls} pr-8`}
             />
-            {/* FIX 3: Clear button — only visible when there is text */}
             {drugSearch && (
               <button
                 type="button"
-                onMouseDown={e => {
-                  e.preventDefault(); // prevent input blur before click registers
-                  setDrugSearch("");
-                  handleChange("drug", "");
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setDrugSearch('');
+                  handleChange('drug', '');
                   setShowDrugList(false);
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-base leading-none p-0.5"
-                aria-label="Clear drug"
               >
                 ×
               </button>
@@ -190,12 +162,12 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
           </div>
           {showDrugList && filteredDrugs.length > 0 && (
             <ul className="absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-              {filteredDrugs.map(drug => (
+              {filteredDrugs.map((drug) => (
                 <li
                   key={drug}
                   onMouseDown={() => {
                     setDrugSearch(drug);
-                    handleChange("drug", drug);
+                    handleChange('drug', drug);
                     setShowDrugList(false);
                   }}
                   className="px-3 py-2 text-sm text-gray-800 hover:bg-blue-50 cursor-pointer"
@@ -208,347 +180,183 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Quantity</label>
-            <input
-              type="text"
-              placeholder="Enter Quantity"
-              value={formData.quantity || ""}
-              onChange={e => handleChange("quantity", e.target.value)}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Dose</label>
-            <select
-              value={formData.dose || ""}
-              onChange={e => handleChange("dose", e.target.value)}
-              className={inputCls}
-            >
-              <option value="">Select item</option>
-              {DOSE_OPTIONS.map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-          </div>
+          <div><label className={labelCls}>Quantity</label><input type="text" placeholder="Enter Quantity" value={formData.quantity || ''} onChange={(e) => handleChange('quantity', e.target.value)} className={inputCls} /></div>
+          <div><label className={labelCls}>Dose</label><select value={formData.dose || ''} onChange={(e) => handleChange('dose', e.target.value)} className={inputCls}><option value="">Select item</option>{DOSE_OPTIONS.map((d) => <option key={d} value={d}>{d}</option>)}</select></div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Frequency</label>
-            <input
-              type="text"
-              placeholder="Enter or Select Frequency"
-              value={formData.frequency || ""}
-              onChange={e => handleChange("frequency", e.target.value)}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Duration</label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Enter Duration"
-                value={formData.duration || ""}
-                onChange={e => handleChange("duration", e.target.value)}
-                className={`${inputCls} pr-12`}
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
-                Days
-              </span>
-            </div>
-          </div>
+          <div><label className={labelCls}>Frequency</label><input type="text" placeholder="Enter or Select Frequency" value={formData.frequency || ''} onChange={(e) => handleChange('frequency', e.target.value)} className={inputCls} /></div>
+          <div><label className={labelCls}>Duration</label><div className="relative"><input type="text" placeholder="Enter Duration" value={formData.duration || ''} onChange={(e) => handleChange('duration', e.target.value)} className={`${inputCls} pr-12`} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">Days</span></div></div>
         </div>
 
-        <div>
-          <label className={labelCls}>Sig</label>
-          <input
-            type="text"
-            placeholder="Enter Sig (Directions)"
-            value={formData.sig || ""}
-            onChange={e => handleChange("sig", e.target.value)}
-            className={inputCls}
-          />
-        </div>
+        <div><label className={labelCls}>Sig</label><input type="text" placeholder="Enter Sig (Directions)" value={formData.sig || ''} onChange={(e) => handleChange('sig', e.target.value)} className={inputCls} /></div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Dispense Amount</label>
-            <input
-              type="text"
-              placeholder="Enter Dispense Amount"
-              value={formData.dispenseAmount || ""}
-              onChange={e => handleChange("dispenseAmount", e.target.value)}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Refills</label>
-            <select
-              value={formData.refills ?? 0}
-              onChange={e => handleChange("refills", Number(e.target.value))}
-              className={inputCls}
-            >
-              {[0, 1, 2, 3, 4, 5].map(n => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-          </div>
+          <div><label className={labelCls}>Dispense Amount</label><input type="text" placeholder="Enter Dispense Amount" value={formData.dispenseAmount || ''} onChange={(e) => handleChange('dispenseAmount', e.target.value)} className={inputCls} /></div>
+          <div><label className={labelCls}>Refills</label><select value={formData.refills ?? 0} onChange={(e) => handleChange('refills', Number(e.target.value))} className={inputCls}>{[0,1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
         </div>
 
-        <div>
-          <label className={labelCls}>Associated Diagnoses</label>
-          <input
-            type="text"
-            placeholder=""
-            value={formData.diagnoses || ""}
-            onChange={e => handleChange("diagnoses", e.target.value)}
-            className={inputCls}
-          />
-        </div>
+        <div><label className={labelCls}>Associated Diagnoses</label><input type="text" value={formData.diagnoses || ''} onChange={(e) => handleChange('diagnoses', e.target.value)} className={inputCls} /></div>
       </div>
-
       <div className="px-6 pt-4 pb-5 border-t border-gray-100 flex items-center justify-between mt-auto">
-        <button onClick={onBack} className="text-sm font-medium text-blue-500 hover:text-blue-600">
-          {isEditMode ? "Cancel" : "Back"}
-        </button>
-        {/* FIX 2: disabled only when drug field is empty, not when it's a custom value */}
-        <button
-          onClick={onContinue}
-          disabled={!canContinue}
-          className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
-            canContinue
-              ? "bg-blue-600 hover:bg-blue-700 text-white"
-              : "bg-gray-100 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          Continue
-        </button>
+        <button onClick={onBack} className="text-sm font-medium text-blue-500 hover:text-blue-600">{isEditMode ? 'Cancel' : 'Back'}</button>
+        <button onClick={onContinue} disabled={!canContinue} className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${canContinue ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>Continue</button>
       </div>
     </div>
   );
 }
 
-// ─── Pharmacy Card ────────────────────────────────────────────────────────────
-function PharmacyCard({ pharmacy, isSelected, onSelect }) {
+// ─── Pharmacy Picker Card ─────────────────────────────────
+function PharmacyPickerCard({ pharmacy, isSelected, onSelect }) {
+  const is24Hours = pharmacy.hours?.toLowerCase().includes('24');
   return (
-    <div
-      onClick={() => onSelect(pharmacy)}
-      className={`p-3 rounded-lg border cursor-pointer transition-all ${
-        isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div
-            className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-              isSelected ? "border-blue-600" : "border-gray-300"
-            }`}
-          >
+    <div onClick={() => onSelect(pharmacy)} className={`p-3.5 rounded-xl border cursor-pointer transition-all ${isSelected ? 'border-blue-500 bg-blue-50/30 ring-1 ring-blue-500' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${isSelected ? 'border-blue-600' : 'border-gray-300'}`}>
             {isSelected && <div className="w-2 h-2 rounded-full bg-blue-600" />}
           </div>
-          <div className="min-w-0">
-            <p className={`text-sm font-semibold leading-tight ${isSelected ? "text-blue-700" : "text-gray-800"}`}>
-              {pharmacy.name}
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5 truncate">{pharmacy.address}</p>
-            <p className="text-xs text-gray-500">{pharmacy.phone}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-gray-800 leading-tight truncate">{pharmacy.name}</p>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">{pharmacy.address}</p>
+            <p className="text-xs text-gray-400 mt-0.5 font-medium">{pharmacy.phone}</p>
+            {is24Hours && <p className="text-xs text-green-600 font-medium mt-1">Open 24 hours</p>}
           </div>
         </div>
-        <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5 ${
-            pharmacy.hours.toLowerCase().includes("24")
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          {pharmacy.hours}
-        </span>
+        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0 ${is24Hours ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{pharmacy.hours}</span>
       </div>
     </div>
   );
 }
 
-// ─── Step 3: Review ───────────────────────────────────────────────────────────
-function StepReview({ selectedMed, formData, onBack, onSendRx, initialPharmacy }) {
-  const [zipInput, setZipInput]     = useState(DEFAULT_ZIP);
-  const [activeZip, setActiveZip]   = useState(DEFAULT_ZIP);
-  const [pharmacies, setPharmacies] = useState(() => PHARMACY_DATA[DEFAULT_ZIP] || []);
-  const [noResults, setNoResults]   = useState(false);
+// ─── Step 3: Review ────────────────────────────────────────
+function StepReview({ selectedMed, formData, onBack, onSendRx, initialPharmacy, isIsolatedRoute, isSaving }) {
+  const [zipInput, setZipInput] = useState(DEFAULT_ZIP);
+  const [activeZip, setActiveZip] = useState(DEFAULT_ZIP);
+  const [pharmacies, setPharmacies] = useState([]);
+  const [noResults, setNoResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedPharmacy, setSelectedPharmacy] = useState(null);
 
-  // FIX 1: Check if initialPharmacy exists in the default zip list.
-  // If found → pre-select it. If not found → use a synthetic "ghost" entry
-  // so the user sees it selected and can either keep it or search for another.
-  const defaultList = PHARMACY_DATA[DEFAULT_ZIP] || [];
-  const matchedInDefault = initialPharmacy
-    ? defaultList.find(p => p.name === initialPharmacy) ?? null
-    : null;
-
-  // Ghost entry: a display-only object representing a pharmacy outside the default zip
-  const ghostPharmacy = initialPharmacy && !matchedInDefault
-    ? { id: "__ghost__", name: initialPharmacy, address: "Outside default zip area", phone: "", hours: "" }
-    : null;
-
-  const [selectedPharmacy, setSelectedPharmacy] = useState(
-    matchedInDefault ?? ghostPharmacy ?? null
-  );
+  useEffect(() => {
+    if (activeZip) {
+      setIsSearching(true);
+      fetchPharmaciesByZip(activeZip)
+        .then(results => {
+          setPharmacies(results);
+          setNoResults(results.length === 0);
+          if (initialPharmacy && results.length > 0) {
+            const matched = results.find(p => p.name === initialPharmacy);
+            if (matched) setSelectedPharmacy(matched);
+            else setSelectedPharmacy(null);
+          } else if (results.length > 0 && !selectedPharmacy) {
+            setSelectedPharmacy(results[0]);
+          }
+        })
+        .catch(() => { setPharmacies([]); setNoResults(true); })
+        .finally(() => setIsSearching(false));
+    }
+  }, [activeZip, initialPharmacy]);
 
   const handleZipSearch = () => {
-    const zip     = zipInput.trim();
-    const results = PHARMACY_DATA[zip];
+    const zip = zipInput.trim();
+    if (!zip) return;
     setActiveZip(zip);
-    if (results && results.length > 0) {
-      setPharmacies(results);
-      setNoResults(false);
-    } else {
-      setPharmacies([]);
-      setNoResults(true);
-    }
-    // FIX 1: Don't wipe selectedPharmacy on zip search — let the user
-    // explicitly pick a new one from the results if they want to change it.
   };
 
-  // All pharmacies shown in the list — prepend ghost if it exists
-  // so the user can see and re-confirm the current pharmacy at the top
-  const displayList = ghostPharmacy
-    ? [ghostPharmacy, ...pharmacies]
-    : pharmacies;
-
-  const reviewFields = [
-    { label: "Medication", value: formData.drug || selectedMed },
-    { label: "Dose",       value: formData.dose      || "—" },
-    { label: "Frequency",  value: formData.frequency || "—" },
-    { label: "Duration",   value: formData.duration  ? `${formData.duration} Days` : "—" },
-    { label: "Refills",    value: formData.refills   ?? 0 },
-    { label: "Sig",        value: formData.sig        || "—" },
-  ];
+  const formattedInstructions = useMemo(() => {
+    const doseText = formData.dose ? `${formData.dose}` : '1 Tablet';
+    const freqText = formData.frequency ? `at ${formData.frequency}` : 'once a day';
+    const durationText = formData.duration ? `Duration: ${formData.duration} days` : 'Duration: 30 days';
+    const refillsText = `Refills: ${formData.refills ?? 0}`;
+    return `${formData.sig || `Take ${doseText} ${freqText}`}. ${durationText}. ${refillsText}.`;
+  }, [formData]);
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex-1 overflow-y-auto px-6 pb-3 min-h-0 space-y-5">
-
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          {reviewFields.map(({ label, value }) => (
-            <div key={label} className="flex px-4 py-2.5 border-b border-gray-100 last:border-0">
-              <span className="text-sm text-gray-500 w-28 flex-shrink-0">{label}</span>
-              <span className="text-sm font-medium text-gray-800">{String(value)}</span>
-            </div>
-          ))}
+      <div className="flex-1 overflow-y-auto px-6 pb-4 min-h-0 space-y-5">
+        <div className="border border-blue-500 bg-white rounded-xl p-4 flex items-start gap-4 shadow-sm relative group">
+          <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600 flex-shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1 pr-14">
+            <h4 className="font-bold text-sm text-gray-900 leading-snug truncate">{formData.drug || selectedMed || 'Medication'}</h4>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">{formattedInstructions}</p>
+          </div>
+          {!isIsolatedRoute && <button type="button" onClick={onBack} className="absolute right-4 top-4 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline transition-all">Change</button>}
         </div>
 
-        <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Choose Pharmacy</h3>
-
-          {/* FIX 1: Banner shown only when the current pharmacy isn't in the default zip */}
-          {ghostPharmacy && (
-            <div className="flex items-start gap-2 mb-3 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-md">
-              <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              </svg>
-              <p className="text-xs text-amber-700">
-                Current pharmacy <span className="font-semibold">"{initialPharmacy}"</span> is not listed
-                for zip <span className="font-semibold">{DEFAULT_ZIP}</span>. You can keep it or search
-                a different zip to select another.
-              </p>
-            </div>
-          )}
-
+        <div className="pt-2">
+          <h3 className="text-sm font-bold text-gray-900 mb-3">Choose Pharmacy</h3>
           <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              placeholder="Search by zip code"
-              value={zipInput}
-              onChange={e => setZipInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleZipSearch()}
-              className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={handleZipSearch}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
-            >
-              Search
-            </button>
+            <div className="relative flex-1"><input type="text" placeholder="Search for pharmacy here" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-800 placeholder-gray-400" /></div>
+            <input type="text" placeholder="Zip code" value={zipInput} onChange={(e) => setZipInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleZipSearch()} className="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" />
           </div>
-
-          {pharmacies.length > 0 && (
-            <p className="text-xs text-gray-400 mb-2">
-              Showing pharmacies near{" "}
-              <span className="font-medium text-gray-500">{activeZip}</span>
-            </p>
-          )}
-
-          {noResults && (
-            <div className="text-center py-6 text-sm text-gray-400">
-              No pharmacies found for zip code{" "}
-              <span className="font-medium text-gray-500">"{activeZip}"</span>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            {displayList.map(pharmacy => (
-              <PharmacyCard
-                key={pharmacy.id}
-                pharmacy={pharmacy}
-                isSelected={selectedPharmacy?.id === pharmacy.id}
-                onSelect={setSelectedPharmacy}
-              />
+          {isSearching && <p className="text-xs text-gray-400 text-center py-2">Loading pharmacies...</p>}
+          {!isSearching && pharmacies.length > 0 && <p className="text-xs text-gray-400 mb-3 font-medium">Showing pharmacies near <span className="text-gray-600 font-semibold">{activeZip}</span></p>}
+          {!isSearching && noResults && <div className="text-center py-8 text-sm text-gray-400 border border-dashed rounded-xl bg-gray-50/50">No pharmacies found for zip code <span className="font-medium text-gray-600">"{activeZip}"</span></div>}
+          <div className="space-y-2.5">
+            {pharmacies.map((pharmacy) => (
+              <PharmacyPickerCard key={pharmacy.id} pharmacy={pharmacy} isSelected={selectedPharmacy?.id === pharmacy.id} onSelect={setSelectedPharmacy} />
             ))}
           </div>
         </div>
       </div>
-
-      <div className="px-6 pt-4 pb-5 border-t border-gray-100 flex items-center justify-between mt-auto">
-        <button onClick={onBack} className="text-sm font-medium text-blue-500 hover:text-blue-600">
-          Back
-        </button>
-        <button
-          onClick={() => onSendRx(selectedPharmacy)}
-          disabled={!selectedPharmacy}
-          className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
-            selectedPharmacy
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-100 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          Send RX
+      <div className="px-6 pt-4 pb-5 border-t border-gray-100 flex items-center justify-between bg-white mt-auto flex-shrink-0">
+        <button type="button" onClick={onBack} disabled={isSaving} className={`text-sm font-bold transition-colors ${isSaving ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700'}`}>Cancel</button>
+        <button type="button" onClick={() => onSendRx(selectedPharmacy)} disabled={!selectedPharmacy || isSaving} className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${selectedPharmacy && !isSaving ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+          {isSaving ? 'Saving...' : (isIsolatedRoute ? 'Update Pharmacy' : 'Send RX')}
         </button>
       </div>
     </div>
   );
 }
 
-// ─── Main Wizard ──────────────────────────────────────────────────────────────
-export default function AddRx({
-  isOpen,
-  onClose,
-  onMedicationAdded,
-  initialData = null,
-}) {
-  //  useBodyScrollLock(isOpen); 
+// ─── Main AddRX Component ────────────────────────────────────
+export default function AddRX({ isOpen, onClose, initialData = null, onIsolatedStepSave, patientId }) {
+  const dispatch = useDispatch();
   const isEditMode = !!initialData;
 
-  const [step, setStep]               = useState(1);
+  const [step, setStep] = useState(1);
   const [selectedMed, setSelectedMed] = useState(null);
-  const [formData, setFormData]       = useState({});
+  const [formData, setFormData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [medicationList, setMedicationList] = useState([]);     
+  const [medicationNames, setMedicationNames] = useState([]);   
+  const [loadingLists, setLoadingLists] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLoadingLists(true);
+      fetchMedications()
+        .then(data => {
+          setMedicationList(data);
+          setMedicationNames(data.map(m => m.name));
+        })
+        .catch(err => console.error('Failed to load medications', err))
+        .finally(() => setLoadingLists(false));
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         setSelectedMed(initialData.drug);
         setFormData({
-          drug:           initialData.drug           || "",
-          dose:           initialData.dosage          || "",
-          sig:            initialData.instructions    || "",
-          quantity:       initialData.quantity        || "",
-          frequency:      initialData.frequency       || "",
-          duration:       initialData.duration        || "",
-          dispenseAmount: initialData.dispenseAmount  || "",
-          diagnoses:      initialData.diagnoses       || "",
-          refills:        initialData.refills         ?? 0,
-          pharmacy:       initialData.pharmacy        || "",
+          drug:           initialData.drug           || '',
+          dose:           initialData.dosage         || '',
+          sig:            initialData.instructions   || '',
+          quantity:       initialData.quantity       || '',
+          frequency:      initialData.frequency      || '',
+          duration:       initialData.duration       || '',
+          dispenseAmount: initialData.dispenseAmount || '',
+          diagnoses:      initialData.diagnoses      || '',
+          refills:        initialData.refills        ?? 0,
+          pharmacy:       initialData.pharmacy       || '',
         });
-        setStep(2);
+        setStep(initialData.startAtStep || 2);
       } else {
         setSelectedMed(null);
         setFormData({});
@@ -564,82 +372,121 @@ export default function AddRx({
     onClose();
   };
 
-  const handleSendRx = (pharmacy) => {
-    const now     = new Date();
-    const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-
-    const newMed = {
-      id:                initialData?.id ?? `med-${Date.now()}`,
-      name:              formData.drug           || selectedMed,
-      dosage:            formData.dose           || "",
-      form:              "Tablet",
-      type:              "send-rx",
-      instructions:      formData.sig            || "",
-      status:            "success",
-      statusLabel:       `Sent ${dateStr} at ${timeStr}`,
-      prescriber:        "EVA Bond Prescriber",
-      pharmacy:          pharmacy.name,
-      patientNote:       "",
-      discontinuedOn:    null,
-      discontinueReason: null,
-      externalPrescriber: null,
-      frequency:         formData.frequency      || "",
-      duration:          formData.duration       || "",
-      quantity:          formData.quantity       || "",
-      dispenseAmount:    formData.dispenseAmount || "",
-      diagnoses:         formData.diagnoses      || "",
-      refills:           formData.refills        ?? 0,
+  const handleSendRx = async (pharmacy) => {
+    if (!patientId) {
+      alert('Patient ID missing.');
+      return;
+    }
+    if (!pharmacy?.id) {
+      alert('Please select a pharmacy.');
+      return;
+    }
+    setIsSaving(true);
+    const payload = {
+      patient_id: patientId,
+      med_name: formData.drug || selectedMed,
+      prescriber_id: 1,
+      pharmacy_id: pharmacy.id,
+      dosage: formData.dose || '',
+      form: 'Tablet',
+      instructions: formData.sig || '',
+      status: 'success',
+      status_label: formatStatusLabel('Sent'),
+      patient_note: formData.patientNote || '',
     };
-
-    onMedicationAdded(newMed);
-    handleClose();
+    try {
+      if (isEditMode && initialData?.prescription_id) {
+        await dispatch(updatePrescription({
+          id: initialData.prescription_id,
+          updates: {
+            dosage: payload.dosage,
+            instructions: payload.instructions,
+            patient_note: payload.patient_note,
+          }
+        })).unwrap();
+      } else {
+        await dispatch(addPrescription(payload)).unwrap();
+      }
+      handleClose();
+    } catch (error) {
+      console.error(error);
+      alert('Failed to save.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const stepSubtitle = {
-    1: "Step 1 - select medication",
-    2: "Step 2 - medication details",
-    3: "Step 3 - review",
-  }[step];
+  const handleStepContinue = () => {
+    if (initialData?.isIsolatedRoute) {
+      if (onIsolatedStepSave) {
+        const drugName = formData.drug || selectedMed;
+        const selectedMedObj = medicationList.find(m => m.name === drugName);
+        onIsolatedStepSave({
+          med_id: selectedMedObj?.med_id,  
+          name: drugName,
+          dosage: formData.dose || '',
+          instructions: formData.sig || '',
+          quantity: formData.quantity || '',
+          frequency: formData.frequency || '',
+          duration: formData.duration || '',
+          dispenseAmount: formData.dispenseAmount || '',
+          diagnoses: formData.diagnoses || '',
+          refills: formData.refills ?? 0,
+        });
+      }
+    } else {
+      setStep(3);
+    }
+  };
+
+  const handlePharmacyIsolatedSave = (selectedPharmacy) => {
+    if (initialData?.isIsolatedRoute) {
+      if (onIsolatedStepSave) {
+        onIsolatedStepSave({
+          pharmacy: selectedPharmacy.name,
+          pharmacy_id: selectedPharmacy.id,
+          pharmacyAddress: selectedPharmacy.address || '',
+        });
+      }
+    } else {
+      handleSendRx(selectedPharmacy);
+    }
+  };
+
+  const stepSubtitle = { 1: 'Step 1 - select medication', 2: 'Step 2 - medication details', 3: 'Step 3 - review' }[step];
 
   if (!isOpen) return null;
+  if (loadingLists && step === 1) return <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white shadow-2xl flex items-center justify-center"><p className="text-gray-500">Loading medications...</p></div>;
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={handleClose} />
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={() => !isSaving && handleClose()} />
       <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white shadow-2xl flex flex-col">
         <div className="flex flex-col flex-1 min-h-0">
-
           <div className="px-6 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
-                  {isEditMode ? "Edit Medication" : "New Medication"}
-                </h2>
-                <p className="text-xs text-gray-400 mt-0.5">{stepSubtitle}</p>
-                <StepIndicator currentStep={step} />
+                <h2 className="text-lg font-bold text-gray-900">{isEditMode ? 'Edit Medication' : 'New Medication'}</h2>
+                {!initialData?.isIsolatedRoute && !isEditMode && (
+                  <>
+                    <p className="text-xs text-gray-400 mt-0.5">{stepSubtitle}</p>
+                    <StepIndicator currentStep={step} />
+                  </>
+                )}
               </div>
-              <button
-                onClick={handleClose}
-                className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors mt-0.5"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={handleClose} disabled={isSaving} className={`w-7 h-7 flex items-center justify-center rounded-full text-gray-400 transition-colors mt-0.5 ${isSaving ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-100 hover:text-gray-600'}`}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
           </div>
-
           <div className="flex flex-col flex-1 min-h-0 pt-4 overflow-hidden">
             {step === 1 && (
               <StepSelect
                 selectedMed={selectedMed}
                 onSelect={setSelectedMed}
                 onCancel={handleClose}
-                onContinue={() => {
-                  setFormData(prev => ({ ...prev, drug: selectedMed }));
-                  setStep(2);
-                }}
+                onContinue={() => { setFormData((prev) => ({ ...prev, drug: selectedMed })); setStep(2); }}
+                medicationNames={medicationNames}
               />
             )}
             {step === 2 && (
@@ -647,22 +494,24 @@ export default function AddRx({
                 selectedMed={selectedMed}
                 formData={formData}
                 setFormData={setFormData}
-                onBack={() => (isEditMode ? handleClose() : setStep(1))}
-                onContinue={() => setStep(3)}
+                onBack={() => (initialData?.isIsolatedRoute || isEditMode ? handleClose() : setStep(1))}
+                onContinue={handleStepContinue}
                 isEditMode={isEditMode}
+                medicationNames={medicationNames}
               />
             )}
             {step === 3 && (
               <StepReview
                 selectedMed={selectedMed}
                 formData={formData}
-                onBack={() => setStep(2)}
-                onSendRx={handleSendRx}
+                onBack={() => (initialData?.isIsolatedRoute ? handleClose() : setStep(2))}
+                onSendRx={handlePharmacyIsolatedSave}
                 initialPharmacy={initialData?.pharmacy ?? null}
+                isIsolatedRoute={initialData?.isIsolatedRoute}
+                isSaving={isSaving}
               />
             )}
           </div>
-
         </div>
       </div>
     </>
