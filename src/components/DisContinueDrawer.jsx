@@ -1,7 +1,6 @@
 import MedicationActionDrawer from './MedicationActionDrawer';
 import {useDispatch} from 'react-redux';
 import { discontinuePrescription } from '../store/MedicationSlice';
-// import { useBodyScrollLock } from "../layouts/BodyScrollLock";
 
 export default function DisContinueDrawer({ isOpen, onClose, medication}) {
   const dispatch = useDispatch();

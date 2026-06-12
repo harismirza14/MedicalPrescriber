@@ -1,9 +1,8 @@
-import React, { useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import DisContinueDrawer from "./DisContinueDrawer";
 import { recontinuePrescription } from "../store/MedicationSlice";
 
-// --- Static Components ---
 const StatusBadge = ({ status }) => {
   const map = {
     success: { label: "Active", className: "bg-green-700 text-white" },
@@ -32,9 +31,10 @@ const OutlineBtn = ({
   onClick,
   variant = "primary",
   className = "",
+  disabled = false,
 }) => {
   const base =
-    "text-[11px] font-semibold px-3 py-1 rounded-md border bg-white transition-colors";
+    "text-[11px] font-semibold px-3 py-1 rounded-md border bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
   const styles =
     variant === "danger"
       ? "border-red-600 text-red-600 hover:bg-red-50"
@@ -42,7 +42,11 @@ const OutlineBtn = ({
         ? "border-green-600 text-green-600 hover:bg-green-50"
         : "border-blue-600 text-blue-600 hover:bg-blue-50";
   return (
-    <button onClick={onClick} className={`${base} ${styles} ${className}`}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${base} ${styles} ${className}`}
+    >
       {children}
     </button>
   );
@@ -57,64 +61,90 @@ const PharmacyLink = ({ pharmacy }) => {
     </div>
   );
 };
+
 const Time = ({ med }) => {
-  if (med.status === "success")
-    return (
-      <div className="flex items-center gap-1">
-        <span className="text-xs text-green-600"> Sucessfully sent </span>
-        <span className="text-xs text-gray-600 font-medium">
-          {med.statusLabel}
-        </span>
-      </div>
-    );
+  if (med.status !== "success") return null;
+  return (
+    <div className="flex items-center gap-1">
+      <span className="text-xs text-green-600">Successfully sent</span>
+      <span className="text-xs text-gray-600 font-medium">
+        {med.statusLabel}
+      </span>
+    </div>
+  );
 };
 
-const StatusContent = ({ med, onOpenUpdate }) => {
-  if (med.status === "discontinued")
+const StatusContent = ({ med, onOpenUpdate, isDoctor, loading }) => {
+  if (med.status === "discontinued") {
     return (
       <div className="text-sm mb-2 text-red-600">
         <p>Reason: {med.discontinueReason}</p>
         <p>Discontinued on {med.discontinuedOn}</p>
       </div>
     );
+  }
 
-  if (med.status === "external")
+  if (med.status === "external") {
     return (
       <div className="flex justify-between items-center py-2 border-t mt-2">
-        <p className="text-xs">Prescribed by {med.externalPrescriber}</p>
-        <OutlineBtn onClick={onOpenUpdate}>Update RX</OutlineBtn>
+        <p className="text-xs font-semibold">
+          Prescribed by:{" "}
+          {med.external_prescriber || med.externalPrescriber || "N/A"}
+        </p>
+        {isDoctor && (
+          <OutlineBtn onClick={onOpenUpdate} disabled={loading}>
+            Update RX
+          </OutlineBtn>
+        )}
       </div>
     );
+  }
 
-  return (
-    (med.status === "success" || med.status === "failed") && (
+  if (med.status === "success" || med.status === "failed") {
+    return (
       <div className="flex gap-12 items-center">
         <Time med={med} />
         <PharmacyLink pharmacy={med.pharmacy} />
       </div>
-    )
-  );
+    );
+  }
+  return null;
 };
 
-// --- Main Component ---
 export default function MedicationCard({ med, patient, onEdit }) {
   const dispatch = useDispatch();
   const [showDiscontinueDrawer, setShowDiscontinueDrawer] = useState(false);
+  const { role } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.medications);
+  const isDoctor = role === "doctor";
 
-  const { subtitle, prescriberName, prescriberRole } = useMemo(() => {
+  const { subtitle, displayName, displayRole, imageSrc } = useMemo(() => {
     const parts = [med.name, med.dosage, med.form].filter(Boolean);
     if (med.type) parts.push(`· ${med.type}`);
     if (med.instructions) parts.push(`· ${med.instructions}`);
-    return {
-      subtitle: parts.join(" "),
-      prescriberName: med.prescriber || "N/A",
-      prescriberRole: med.prescriberRole || "Prescriber",
-    };
-  }, [med]);
+
+    if (isDoctor) {
+      return {
+        subtitle: parts.join(" "),
+        displayName: patient?.name || med.patient_name || "Unknown Patient",
+        displayRole: "Patient",
+        imageSrc: "/Doctor.png",
+      };
+    } else {
+      return {
+        subtitle: parts.join(" "),
+        displayName: med.prescriber_name || med.prescriber || "N/A",
+        displayRole: med.prescriberRole || "Prescriber",
+        imageSrc: "/Doctor.png",
+      };
+    }
+  }, [med, patient, isDoctor]);
 
   const handleRecontinue = () => {
     dispatch(recontinuePrescription({ id: med.id }));
   };
+
+  const canEdit = isDoctor;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3">
@@ -126,39 +156,57 @@ export default function MedicationCard({ med, patient, onEdit }) {
       {med.patientNote && (
         <p className="text-sm text-gray-600 mb-3">{med.patientNote}</p>
       )}
-      <StatusContent med={med} onOpenUpdate={() => onEdit(med)} />
+      <StatusContent
+        med={med}
+        onOpenUpdate={() => onEdit && onEdit(med)}
+        isDoctor={isDoctor}
+        loading={loading}
+      />
 
       {med.status !== "external" && (
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
           <div className="flex items-center gap-2">
             <img
-              src="/Doctor.png"
-              alt="Doctor"
+              src={imageSrc}
+              alt={isDoctor ? "Patient" : "Doctor"}
               className="w-8 h-8 rounded-full"
             />
             <div>
-              <p className="text-xs font-medium">{prescriberName}</p>
+              <p className="text-xs font-medium">{displayName}</p>
               <span className="text-[10px] bg-blue-100 text-blue-700 px-2 rounded-full">
-                {prescriberRole}
+                {displayRole}
               </span>
             </div>
           </div>
-          <div className="flex gap-2">
-            <OutlineBtn>Send Refill RX</OutlineBtn>
-            <OutlineBtn onClick={() => onEdit(med)}>Update RX</OutlineBtn>
-            {med.status === "discontinued" ? (
-              <OutlineBtn variant="success" onClick={handleRecontinue}>
-                ReActive
-              </OutlineBtn>
-            ) : (
+
+          {canEdit && (
+            <div className="flex gap-2">
+              <OutlineBtn disabled={loading}>Send Refill RX</OutlineBtn>
               <OutlineBtn
-                variant="danger"
-                onClick={() => setShowDiscontinueDrawer(true)}
+                onClick={() => onEdit && onEdit(med)}
+                disabled={loading}
               >
-                Discontinue RX
+                Update RX
               </OutlineBtn>
-            )}
-          </div>
+              {med.status === "discontinued" ? (
+                <OutlineBtn
+                  variant="success"
+                  onClick={handleRecontinue}
+                  disabled={loading}
+                >
+                  ReActive
+                </OutlineBtn>
+              ) : (
+                <OutlineBtn
+                  variant="danger"
+                  onClick={() => setShowDiscontinueDrawer(true)}
+                  disabled={loading}
+                >
+                  Discontinue RX
+                </OutlineBtn>
+              )}
+            </div>
+          )}
         </div>
       )}
 

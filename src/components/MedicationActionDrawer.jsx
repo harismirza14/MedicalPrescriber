@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { useBodyScrollLock } from "../layouts/BodyScrollLock";
+
 export default function MedicationActionDrawer({
   isOpen,
   onClose,
@@ -9,13 +9,11 @@ export default function MedicationActionDrawer({
   confirmLabel = 'Confirm',
   confirmClassName = 'bg-blue-600 hover:bg-blue-700 text-white',
 }) {
-    //  useBodyScrollLock(isOpen); 
   const [reason, setReason] = useState('');
   const [date, setDate] = useState('');
   const [touched, setTouched] = useState({ reason: false, date: false });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Reset form whenever the drawer opens fresh
   useEffect(() => {
     if (isOpen) {
       setReason('');
@@ -28,11 +26,9 @@ export default function MedicationActionDrawer({
   if (!isOpen) return null;
 
   const showReasonError = (isSubmitted || touched.reason) && !reason.trim();
-  const showDateError   = (isSubmitted || touched.date)   && !date.trim();
+  const showDateError = (isSubmitted || touched.date) && !date.trim();
 
-  const handleClose = () => {
-    onClose();
-  };
+  const handleClose = () => onClose();
 
   const handleSubmit = () => {
     setIsSubmitted(true);
@@ -50,13 +46,9 @@ export default function MedicationActionDrawer({
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={handleClose}
-      />
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={handleClose} />
       <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 p-6 flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">{title}</h2>
           <button
             onClick={handleClose}
@@ -67,24 +59,20 @@ export default function MedicationActionDrawer({
           </button>
         </div>
 
-        {/* Medication name context */}
         <p className="text-sm text-gray-500 mb-6">
           <span className="font-medium text-gray-700">{medication?.name}</span>
         </p>
 
-        {/* Reason */}
         <div className="mb-6">
           <div className="flex justify-between mb-1">
             <label className="text-sm font-semibold text-gray-700">Reason</label>
-            {showReasonError && (
-              <span className="text-red-500 text-xs">Required</span>
-            )}
+            {showReasonError && <span className="text-red-500 text-xs">Required</span>}
           </div>
           <textarea
             rows={3}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            onBlur={() => setTouched((prev) => ({ ...prev, reason: true }))}
+            onBlur={() => setTouched(prev => ({ ...prev, reason: true }))}
             placeholder="Enter reason…"
             className={`w-full border rounded-md p-2 text-sm resize-none focus:outline-none focus:ring-2 ${
               showReasonError
@@ -94,19 +82,16 @@ export default function MedicationActionDrawer({
           />
         </div>
 
-        {/* Date */}
         <div className="mb-8">
           <div className="flex justify-between mb-1">
             <label className="text-sm font-semibold text-gray-700">Date</label>
-            {showDateError && (
-              <span className="text-red-500 text-xs">Required</span>
-            )}
+            {showDateError && <span className="text-red-500 text-xs">Required</span>}
           </div>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            onBlur={() => setTouched((prev) => ({ ...prev, date: true }))}
+            onBlur={() => setTouched(prev => ({ ...prev, date: true }))}
             className={`w-full border rounded-md p-2 text-sm focus:outline-none focus:ring-2 ${
               showDateError
                 ? 'border-red-500 focus:ring-red-300'
@@ -115,7 +100,6 @@ export default function MedicationActionDrawer({
           />
         </div>
 
-        {/* Confirm button pinned to bottom */}
         <div className="mt-auto">
           <button
             onClick={handleSubmit}

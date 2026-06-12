@@ -1,11 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import api from "./api";
 
 const API_BASE = "http://localhost:3000/api";
 
-export function generateMedId(prefix = "med") {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-}
 export function formatStatusLabel() {
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-US", {
@@ -18,11 +16,9 @@ export function formatStatusLabel() {
     minute: "2-digit",
     hour12: true,
   });
-  return ` ${dateStr} at ${timeStr}`;
+  return `${dateStr} at ${timeStr}`;
 }
-export function getTodayISO() {
-  return new Date().toISOString();
-}
+
 const formatDate = (isoString) => {
   if (!isoString) return null;
   const date = new Date(isoString);
@@ -32,71 +28,90 @@ const formatDate = (isoString) => {
     year: "numeric",
   });
 };
+
 const transformPrescription = (dbMed) => ({
-  id: dbMed.prescription_id,
-  name: dbMed.med_name,
-  dosage: dbMed.dosage,
-  form: dbMed.form,
-  instructions: dbMed.instructions,
-  status: dbMed.status,
-  statusLabel: dbMed.status_label || formatStatusLabel(),
-  pharmacy: dbMed.pharmacy_name,
-  prescriber: dbMed.prescriber_name,
-  prescriberRole: dbMed.prescriber_role,
-  patientNote: dbMed.patient_note,
-  discontinuedOn: formatDate(dbMed.discontinued_on),
-  discontinueReason: dbMed.discontinue_reason,
-  quantity: dbMed.quantity,
-  refills: dbMed.refills,
-  frequency: dbMed.frequency,
-  duration: dbMed.duration,
-  dispenseAmount: dbMed.dispense_amount,
-  diagnoses: dbMed.diagnoses,
+  id:                 dbMed.prescription_id,
+  name:               dbMed.med_name,
+  dosage:             dbMed.dosage,
+  form:               dbMed.form,
+  instructions:       dbMed.instructions,
+  status:             dbMed.status,
+  statusLabel:        dbMed.status_label || formatStatusLabel(),
+  pharmacy:           dbMed.pharmacy_name,
+  prescriber_id:      dbMed.prescriber_id,
+  prescriber:         dbMed.prescriber_name,
+  prescriber_name:    dbMed.prescriber_name,
+  prescriberRole:     dbMed.prescriber_role,
+  patientNote:        dbMed.patient_note,
+  discontinuedOn:     formatDate(dbMed.discontinued_on),
+  discontinueReason:  dbMed.discontinue_reason,
+  quantity:           dbMed.quantity,
+  refills:            dbMed.refills,
+  frequency:          dbMed.frequency,
+  duration:           dbMed.duration,
+  dispenseAmount:     dbMed.dispense_amount,
+  diagnoses:          dbMed.diagnoses,
+  external_prescriber: dbMed.external_prescriber ?? null,
+  externalPrescriber:  dbMed.external_prescriber ?? null,
+  patient_name:       dbMed.patient_name,
+  patient_id:         dbMed.patient_id,
 });
 
 export const fetchPrescriptions = createAsyncThunk(
   "medications/fetch",
-  async (patientId) => {
-    const res = await axios.get(
-      `${API_BASE}/patients/${patientId}/prescriptions`,
-    );
-    return res.data;
-  },
+  async ({ patientId, prescriberId }) => {
+    return await api.fetchPrescriptions(patientId, prescriberId);
+  }
 );
 
 export const addPrescription = createAsyncThunk(
   "medications/add",
-  async (prescriptionData) => {
-    const res = await axios.post(`${API_BASE}/prescriptions`, prescriptionData);
-    return res.data;
-  },
+  async (prescriptionData, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(`${API_BASE}/prescriptions`, prescriptionData);
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
 );
 
 export const updatePrescription = createAsyncThunk(
   "medications/update",
-  async ({ id, updates }) => {
-    const res = await axios.put(`${API_BASE}/prescriptions/${id}`, updates);
-    return res.data;
-  },
-);  
+  async ({ id, updates, role, userId }, { rejectWithValue }) => {
+    try {
+      return await api.updatePrescription(id, updates, role, userId);
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 export const discontinuePrescription = createAsyncThunk(
   "medications/discontinue",
-  async ({ id, reason }) => {
-    const res = await axios.patch(
-      `${API_BASE}/prescriptions/${id}/discontinue`,
-      { reason },
-    );
-    return res.data;
-  },
+  async ({ id, reason }, { rejectWithValue }) => {
+    try {
+      const res = await axios.patch(
+        `${API_BASE}/prescriptions/${id}/discontinue`,
+        { reason }
+      );
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
 );
 
 export const recontinuePrescription = createAsyncThunk(
   "medications/recontinue",
-  async ({ id }) => {
-    const res = await axios.patch(`${API_BASE}/prescriptions/${id}/recontinue`);
-    return res.data;
-  },
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const res = await axios.patch(`${API_BASE}/prescriptions/${id}/recontinue`);
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
 );
 
 const medicationsSlice = createSlice({
@@ -115,50 +130,80 @@ const medicationsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchPrescriptions.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchPrescriptions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.list = action.payload.map(transformPrescription);
-      })
-      .addCase(fetchPrescriptions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-      .addCase(addPrescription.fulfilled, (state, action) => {
-        const transformed = transformPrescription(action.payload);
-        state.list.unshift(transformed);
-      })
 
-      .addCase(updatePrescription.fulfilled, (state, action) => {
-        const transformed = transformPrescription(action.payload);
-        const index = state.list.findIndex((m) => m.id === transformed.id);
-        if (index !== -1) {
-          state.list[index] = transformed;
-        } else {
-          console.warn("❌ No matching prescription for id", transformed.id);
-        }
-      })
-      // discontinue
-      .addCase(discontinuePrescription.fulfilled, (state, action) => {
-        const transformed = transformPrescription(action.payload);
-        const index = state.list.findIndex((m) => m.id === transformed.id);
-        if (index !== -1) {
-          state.list[index] = transformed;
-        }
-      })
-      // recontinue
-      .addCase(recontinuePrescription.fulfilled, (state, action) => {
-        const transformed = transformPrescription(action.payload);
-        const index = state.list.findIndex((m) => m.id === transformed.id);
-        if (index !== -1) {
-          state.list[index] = transformed;
-        }
-      });
+    builder.addCase(fetchPrescriptions.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchPrescriptions.fulfilled, (state, action) => {
+      state.loading = false;
+      state.list = action.payload.map(transformPrescription);
+    });
+    builder.addCase(fetchPrescriptions.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message;
+    });
+
+    builder.addCase(addPrescription.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(addPrescription.fulfilled, (state, action) => {
+      state.loading = false;
+      const transformed = transformPrescription(action.payload);
+      state.list.unshift(transformed);
+    });
+    builder.addCase(addPrescription.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || action.error.message;
+    });
+
+    builder.addCase(updatePrescription.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(updatePrescription.fulfilled, (state, action) => {
+      state.loading = false;
+      const transformed = transformPrescription(action.payload);
+      const index = state.list.findIndex((m) => m.id === transformed.id);
+      if (index !== -1) state.list[index] = transformed;
+    });
+    builder.addCase(updatePrescription.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || action.error.message;
+    });
+
+    builder.addCase(discontinuePrescription.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(discontinuePrescription.fulfilled, (state, action) => {
+      state.loading = false;
+      const transformed = transformPrescription(action.payload);
+      const index = state.list.findIndex((m) => m.id === transformed.id);
+      if (index !== -1) state.list[index] = transformed;
+    });
+    builder.addCase(discontinuePrescription.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || action.error.message;
+    });
+
+    builder.addCase(recontinuePrescription.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(recontinuePrescription.fulfilled, (state, action) => {
+      state.loading = false;
+      const transformed = transformPrescription(action.payload);
+      const index = state.list.findIndex((m) => m.id === transformed.id);
+      if (index !== -1) state.list[index] = transformed;
+    });
+    builder.addCase(recontinuePrescription.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || action.error.message;
+    });
   },
 });
 
 export const { clearError, setInitialMedications } = medicationsSlice.actions;
-export default medicationsSlice.reducer;
+export default medicationsSlice.reducer; 

@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addPrescription, fetchPrescriptions } from '../store/MedicationSlice';
 import ExternalRxDrawer from './ExternalRxDrawer';
-// import { useBodyScrollLock } from "../layouts/BodyScrollLock";
-export default function AddMedicationModal({ onClose, onAdd,isOpen, onOpenSendRx }) {
-  // useBodyScrollLock(isOpen);
+
+const PATIENT_ID = '080392';
+
+export default function AddMedicationModal({ onClose, isOpen, onOpenSendRx }) {
+  const dispatch = useDispatch();
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExternalRx, setShowExternalRx] = useState(false);
 
@@ -10,7 +14,7 @@ export default function AddMedicationModal({ onClose, onAdd,isOpen, onOpenSendRx
     if (!selectedOption) return;
 
     if (selectedOption === 'send') {
-      onOpenSendRx(); // closes this modal + opens AddRX wizard (Medications.jsx handles it)
+      onOpenSendRx();
       return;
     }
 
@@ -19,13 +23,19 @@ export default function AddMedicationModal({ onClose, onAdd,isOpen, onOpenSendRx
     }
   };
 
-  const handleExternalSubmit = (newMed) => {
-    if (onAdd) onAdd(newMed);  // bubble up to Medications.jsx
+  const handleExternalSubmit = async (serverPayload) => {
+    try {
+      await dispatch(addPrescription(serverPayload)).unwrap();
+      dispatch(fetchPrescriptions(PATIENT_ID));
+    } catch (err) {
+      console.error('Failed to save external prescription:', err);
+      alert(`Error saving prescription: ${err.message || err}`);
+      return;
+    }
     setShowExternalRx(false);
     onClose();
   };
 
-  // If the external drawer is open, render it instead
   if (showExternalRx) {
     return (
       <ExternalRxDrawer
