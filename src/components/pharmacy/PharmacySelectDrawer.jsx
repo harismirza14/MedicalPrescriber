@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchPharmaciesByZip } from "../store/api";
+import { fetchPharmaciesByZip } from "../../store/api";
 
 export default function PharmacySelectDrawer({
   isOpen,

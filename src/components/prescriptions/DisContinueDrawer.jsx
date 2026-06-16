@@ -1,6 +1,6 @@
 import MedicationActionDrawer from './MedicationActionDrawer';
 import {useDispatch} from 'react-redux';
-import { discontinuePrescription } from '../store/MedicationSlice';
+import { discontinuePrescription } from '../../store/MedicationSlice';
 
 export default function DisContinueDrawer({ isOpen, onClose, medication}) {
   const dispatch = useDispatch();

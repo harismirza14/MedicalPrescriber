@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import {
   fetchPrescriptions,
@@ -7,17 +7,20 @@ import {
   addPrescription,
   clearError,
 } from "../store/MedicationSlice";
-import { fetchPatient, fetchPdmp, fetchPharmaciesByZip } from "../store/api";
-import PDMPCard from "../components/PDMPCard";
-import PharmacyCard from "../components/PharmacyCard";
-import MedicationCard from "../components/MedicationCard";
-import AddMedicationModal from "../components/AddMedicationModal";
-import AddRX from "../components/AddRX";
-import ExternalRxDrawer from "../components/ExternalRXDrawer";
-import UpdateMedicationDrawer from "../components/UpdateMedicationDrawe";
-import PharmacySelectDrawer from "../components/PharmacySelectDrawer";
+import { fetchPdmp } from "../api/patientApi";
+import { fetchPharmaciesByZip } from "../api/masterDataApi";
+import usePrescriptions from "../hooks/usePrescriptions";
+import usePatient from "../hooks/usePatient";
+import PDMPCard from "../components/pharmacy/PDMPCard";
+import PharmacyCard from "../components/pharmacy/PharmacyCard";
+import MedicationCard from "../components/prescriptions/MedicationCard";
+import AddMedicationModal from "../components/prescriptions/AddMedicationModal";
+import AddRX from "../components/prescriptions/AddRX";
+import ExternalRxDrawer from "../components/prescriptions/ExternalRxDrawer";
+import UpdateMedicationDrawer from "../components/prescriptions/UpdateMedicationDrawer";
+import PharmacySelectDrawer from "../components/pharmacy/PharmacySelectDrawer";
 
-export default function Medications({
+export default function MedicationsPage({
   role,
   userId,
   patientId: propPatientId,
@@ -26,13 +29,28 @@ export default function Medications({
   const [searchParams] = useSearchParams();
   const urlPatientId = searchParams.get("patientId");
   const effectivePatientId = propPatientId || urlPatientId;
-  const medications = useSelector((state) => state.medications.list);
-  const loading = useSelector((state) => state.medications.loading);
-  const error = useSelector((state) => state.medications.error);
-  const [patient, setPatient] = useState(null);
+
+  // ── Prescriptions (Redux-backed) ──────────────────────────────────
+  const {
+    prescriptions: medications,
+    loading,
+    error,
+    refetch: refetchPrescriptions,
+  } = usePrescriptions(
+    effectivePatientId,
+    role === "doctor" ? userId : undefined,
+  );
+
+  // ── Patient data ──────────────────────────────────────────────────
+  const {
+    patient,
+    loading: patientLoading,
+    error: patientError,
+  } = usePatient(effectivePatientId);
+
+  // ── PDMP & pharmacy (still fetched locally) ───────────────────────
   const [pdmpData, setPdmpData] = useState(null);
   const [pharmacyData, setPharmacyData] = useState(null);
-  const [localError, setLocalError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showAddRx, setShowAddRx] = useState(false);
   const [showExternalRx, setShowExternalRx] = useState(false);
@@ -49,48 +67,32 @@ export default function Medications({
   };
 
   const handlePharmacyChange = (newPharmacy) => setPharmacyData(newPharmacy);
-  const fetchingPatient = useRef(false);
+  const fetchingExtras = useRef(false);
 
   useEffect(() => {
     if (!effectivePatientId) {
-      setPatient(null);
       setPdmpData(null);
       setPharmacyData(null);
       return;
     }
-    if (fetchingPatient.current) return;
-    fetchingPatient.current = true;
-
-    setLocalError(null);
+    if (fetchingExtras.current) return;
+    fetchingExtras.current = true;
 
     Promise.all([
-      fetchPatient(effectivePatientId),
       fetchPdmp(effectivePatientId),
       fetchPharmaciesByZip("22903"),
     ])
-      .then(([patientData, pdmp, pharmacies]) => {
-        setPatient(patientData);
+      .then(([pdmp, pharmacies]) => {
         setPdmpData(pdmp);
         setPharmacyData(pharmacies?.length ? pharmacies[0] : null);
       })
       .catch((err) => {
-        console.error("Failed to load patient information:", err);
-        setLocalError("Could not load patient information.");
+        console.error("Failed to load supplementary data:", err);
       })
       .finally(() => {
-        fetchingPatient.current = false;
+        fetchingExtras.current = false;
       });
   }, [effectivePatientId]);
-
-  useEffect(() => {
-    if (!effectivePatientId) return;
-    dispatch(
-      fetchPrescriptions({
-        patientId: effectivePatientId,
-        prescriberId: role === "doctor" ? userId : undefined,
-      }),
-    );
-  }, [dispatch, effectivePatientId, userId, role]);
 
   const handleEditMedication = (med) => {
     if (role !== "doctor" || String(med.prescriber_id) !== String(userId))
@@ -153,21 +155,16 @@ export default function Medications({
 
     try {
       await dispatch(
-        updatePrescription({ id: editingMedication.id, updates, role, userId }),
+        updatePrescription({ id: editingMedication.id, updates }),
       ).unwrap();
-      dispatch(
-        fetchPrescriptions({
-          patientId: effectivePatientId,
-          prescriberId: userId,
-        }),
-      );
+      refetchPrescriptions();
 
       setShowUpdateRx(false);
       setEditingMedication(null);
     } catch {}
   };
 
-  if (localError) return <div className="p-4 text-red-600">{localError}</div>;
+  if (patientError) return <div className="p-4 text-red-600">{patientError}</div>;
 
   if (!effectivePatientId) {
     return (
@@ -318,12 +315,7 @@ export default function Medications({
             onSubmit={async (payload) => {
               try {
                 await dispatch(addPrescription(payload)).unwrap();
-                dispatch(
-                  fetchPrescriptions({
-                    patientId: effectivePatientId,
-                    prescriberId: userId,
-                  }),
-                );
+                refetchPrescriptions();
                 setShowExternalRx(false);
                 setExternalInitialData(null);
                 setEditingMedication(null);

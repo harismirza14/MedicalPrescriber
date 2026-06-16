@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DisContinueDrawer from "./DisContinueDrawer";
-import { recontinuePrescription } from "../store/MedicationSlice";
+import { recontinuePrescription } from "../../store/MedicationSlice";
 
 const StatusBadge = ({ status }) => {
   const map = {

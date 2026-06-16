@@ -1,8 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import api from "./api";
-
-const API_BASE = "http://localhost:3000/api";
+import {
+  fetchPrescriptions as fetchPrescriptionsApi,
+  createPrescription as createPrescriptionApi,
+  updatePrescription as updatePrescriptionApi,
+  discontinuePrescription as discontinuePrescriptionApi,
+  recontinuePrescription as recontinuePrescriptionApi,
+} from "../api/prescriptionApi";
 
 export function formatStatusLabel() {
   const now = new Date();
@@ -30,88 +33,83 @@ const formatDate = (isoString) => {
 };
 
 const transformPrescription = (dbMed) => ({
-  id:                 dbMed.prescription_id,
-  name:               dbMed.med_name,
-  dosage:             dbMed.dosage,
-  form:               dbMed.form,
-  instructions:       dbMed.instructions,
-  status:             dbMed.status,
-  statusLabel:        dbMed.status_label || formatStatusLabel(),
-  pharmacy:           dbMed.pharmacy_name,
-  prescriber_id:      dbMed.prescriber_id,
-  prescriber:         dbMed.prescriber_name,
-  prescriber_name:    dbMed.prescriber_name,
-  prescriberRole:     dbMed.prescriber_role,
-  patientNote:        dbMed.patient_note,
-  discontinuedOn:     formatDate(dbMed.discontinued_on),
-  discontinueReason:  dbMed.discontinue_reason,
-  quantity:           dbMed.quantity,
-  refills:            dbMed.refills,
-  frequency:          dbMed.frequency,
-  duration:           dbMed.duration,
-  dispenseAmount:     dbMed.dispense_amount,
-  diagnoses:          dbMed.diagnoses,
+  id: dbMed.prescription_id,
+  name: dbMed.med_name,
+  dosage: dbMed.dosage,
+  form: dbMed.form,
+  instructions: dbMed.instructions,
+  status: dbMed.status,
+  statusLabel: dbMed.status_label || formatStatusLabel(),
+  pharmacy: dbMed.pharmacy_name,
+  pharmacy_zip: dbMed.pharmacy_zip,
+  prescriber_id: dbMed.prescriber_id,
+  prescriber: dbMed.prescriber_name,
+  prescriber_name: dbMed.prescriber_name,
+  prescriberRole: dbMed.prescriber_role,
+  patientNote: dbMed.patient_note,
+  discontinuedOn: formatDate(dbMed.discontinued_on),
+  discontinueReason: dbMed.discontinue_reason,
+  quantity: dbMed.quantity,
+  refills: dbMed.refills,
+  frequency: dbMed.frequency,
+  duration: dbMed.duration,
+  dispenseAmount: dbMed.dispense_amount,
+  diagnoses: dbMed.diagnoses,
   external_prescriber: dbMed.external_prescriber ?? null,
-  externalPrescriber:  dbMed.external_prescriber ?? null,
-  patient_name:       dbMed.patient_name,
-  patient_id:         dbMed.patient_id,
+  externalPrescriber: dbMed.external_prescriber ?? null,
+  patient_name: dbMed.patient_name,
+  patient_id: dbMed.patient_id,
 });
 
 export const fetchPrescriptions = createAsyncThunk(
   "medications/fetch",
   async ({ patientId, prescriberId }) => {
-    return await api.fetchPrescriptions(patientId, prescriberId);
-  }
+    return await fetchPrescriptionsApi(patientId, prescriberId);
+  },
 );
 
 export const addPrescription = createAsyncThunk(
   "medications/add",
   async (prescriptionData, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_BASE}/prescriptions`, prescriptionData);
-      return res.data;
+      return await createPrescriptionApi(prescriptionData);
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
-  }
+  },
 );
 
 export const updatePrescription = createAsyncThunk(
   "medications/update",
-  async ({ id, updates, role, userId }, { rejectWithValue }) => {
+  async ({ id, updates }, { rejectWithValue }) => {
     try {
-      return await api.updatePrescription(id, updates, role, userId);
+      return await updatePrescriptionApi(id, updates);
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
-  }
+  },
 );
 
 export const discontinuePrescription = createAsyncThunk(
   "medications/discontinue",
   async ({ id, reason }, { rejectWithValue }) => {
     try {
-      const res = await axios.patch(
-        `${API_BASE}/prescriptions/${id}/discontinue`,
-        { reason }
-      );
-      return res.data;
+      return await discontinuePrescriptionApi(id, reason);
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
-  }
+  },
 );
 
 export const recontinuePrescription = createAsyncThunk(
   "medications/recontinue",
   async ({ id }, { rejectWithValue }) => {
     try {
-      const res = await axios.patch(`${API_BASE}/prescriptions/${id}/recontinue`);
-      return res.data;
+      return await recontinuePrescriptionApi(id);
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
-  }
+  },
 );
 
 const medicationsSlice = createSlice({
@@ -130,7 +128,6 @@ const medicationsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-
     builder.addCase(fetchPrescriptions.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -206,4 +203,4 @@ const medicationsSlice = createSlice({
 });
 
 export const { clearError, setInitialMedications } = medicationsSlice.actions;
-export default medicationsSlice.reducer; 
+export default medicationsSlice.reducer;

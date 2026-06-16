@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   updatePrescription,
   formatStatusLabel,
-} from "../store/MedicationSlice";
+} from "../../store/MedicationSlice";
 
 export default function ExternalRxDrawer({
   isOpen,

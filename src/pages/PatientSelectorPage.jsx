@@ -1,27 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchDoctorPatients } from "../store/api";
+import useDoctorPatients from "../hooks/useDoctorPatients";
 
-export default function PatientSelector({ doctorId }) {
-  const [patients, setPatients] = useState([]);
+export default function PatientSelectorPage({ doctorId }) {
+  const { patients, loading } = useDoctorPatients(doctorId);
   const [selectedPatientId, setSelectedPatientId] = useState("");
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Auto-select the first patient once the list loads.
   useEffect(() => {
-    if (doctorId) {
-      fetchDoctorPatients(doctorId)
-        .then((data) => {
-          const validPatients = (data || []).filter((p) => p && p.patient_id);
-          setPatients(validPatients);
-          if (validPatients.length > 0 && validPatients[0].patient_id) {
-            setSelectedPatientId(validPatients[0].patient_id);
-          }
-        })
-        .catch((err) => console.error("Failed to fetch patients:", err))
-        .finally(() => setLoading(false));
+    if (patients.length > 0 && !selectedPatientId) {
+      setSelectedPatientId(patients[0].patient_id);
     }
-  }, [doctorId]);
+  }, [patients, selectedPatientId]);
 
   const handleView = () => {
     if (selectedPatientId) {

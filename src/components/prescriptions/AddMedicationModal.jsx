@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addPrescription, fetchPrescriptions } from '../store/MedicationSlice';
+import { addPrescription, fetchPrescriptions } from '../../store/MedicationSlice';
 import ExternalRxDrawer from './ExternalRxDrawer';
 
 const PATIENT_ID = '080392';
