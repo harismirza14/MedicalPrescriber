@@ -4,7 +4,7 @@ import { fetchDoctorPatients as fetchDoctorPatientsApi } from "../api/patientApi
 /**
  * Hook to fetch the list of patients assigned to a prescriber.
  *
- * @param {string|null} prescriberId – Doctor / prescriber whose patients to load.
+ * @param {string|null} prescriberId 
  * @returns {{ patients: Array, loading: boolean, error: string|null, refetch: Function }}
  */
 export default function useDoctorPatients(prescriberId) {

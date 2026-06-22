@@ -57,16 +57,16 @@ export default function LoginPage() {
                 htmlFor="userId"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                User ID
+                Email
               </label>
               <input
                 id="userId"
                 name="userId"
-                type="text"
+                type="email"
                 required
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                placeholder="Enter your ID"
+                placeholder="Enter your email"
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>

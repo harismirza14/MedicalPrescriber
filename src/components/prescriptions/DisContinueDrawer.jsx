@@ -4,7 +4,6 @@ import { discontinuePrescription } from '../../store/MedicationSlice';
 
 export default function DisContinueDrawer({ isOpen, onClose, medication}) {
   const dispatch = useDispatch();
-  //  useBodyScrollLock(isOpen); 
   const handleConfirm = (id, reason, date) => {
     dispatch(discontinuePrescription({ id, reason, date }));
     onClose();

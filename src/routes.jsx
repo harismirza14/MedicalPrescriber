@@ -3,9 +3,10 @@ import { createBrowserRouter, Navigate, useSearchParams } from 'react-router-dom
 import { useSelector } from 'react-redux';
 
 import DashboardLayout from './components/layout/DashboardLayout';
-import LoginPage from './pages/LoginPage';
-import MedicationsPage from './pages/MedicationsPage';
-import PatientSelectorPage from './pages/PatientSelectorPage';
+import LoginPage from './pages/Login';
+import Medications from './pages/Medications';
+import PatientSelector from './pages/PatientSelector';
+import AddPatient from './pages/AddPatient';
 
 function HomeRedirect() {
   const { role } = useSelector((state) => state.auth);
@@ -25,12 +26,12 @@ function LoginRouteWrapper() {
 
 function MedicationsWrapper() {
   const { role, user } = useSelector((state) => state.auth);
-  const userId = role === 'patient' ? user?.patient_id : user?.prescriber_id;
+  const userId = user?.roleSpecificId;
   const [searchParams] = useSearchParams();
-  const patientId = role === 'patient' ? user?.patient_id : searchParams.get('patientId');
+  const patientId = role === 'patient' ? user?.roleSpecificId : searchParams.get('patientId');
 
   return (
-    <MedicationsPage
+    <Medications
       role={role}
       userId={userId}
       patientId={patientId}
@@ -40,11 +41,9 @@ function MedicationsWrapper() {
 
 function PatientSelectorWrapper() {
   const { role, user } = useSelector((state) => state.auth);
-  const userId = role === 'patient' ? user?.patient_id : user?.prescriber_id;
-
-  return <PatientSelectorPage doctorId={userId} />;
+  const doctorId = role === 'doctor' ? user?.roleSpecificId : null;
+  return <PatientSelector doctorId={doctorId} />;
 }
-
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -64,6 +63,10 @@ export const router = createBrowserRouter([
       {
         path: '/select-patient',
         element: <PatientSelectorWrapper />,
+      },
+      {
+        path: '/add-patient',
+        element: <AddPatient />,
       },
     ],
   },

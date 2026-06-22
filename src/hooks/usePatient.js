@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { fetchPatient as fetchPatientApi } from "../api/patientApi";
 
-// Simple in-memory cache to avoid re-fetching the same patient.
 const patientCache = new Map();
 
 /**
- * Hook to fetch a single patient's data.
+
  *
  * @param {string|null} patientId – Patient to load.
  * @returns {{ patient: object|null, loading: boolean, error: string|null, refetch: Function }}
@@ -23,8 +22,6 @@ export default function usePatient(patientId) {
       setError(null);
       return;
     }
-
-    // Return cached data immediately if available.
     if (patientCache.has(patientId)) {
       setPatient(patientCache.get(patientId));
       setLoading(false);

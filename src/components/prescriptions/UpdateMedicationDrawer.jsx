@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { fetchPharmaciesByZip } from "../../store/api";
+import { fetchPharmaciesByZip } from "../../api/masterDataApi";
 
 export default function UpdateMedicationDrawer({
   isOpen,

@@ -5,8 +5,8 @@ import { fetchPrescriptions } from "../store/MedicationSlice";
 /**
  * Hook to fetch and access prescriptions from the Redux store.
  *
- * @param {string|null} patientId  – Patient whose prescriptions to load.
- * @param {string}      [prescriberId] – Optional prescriber filter.
+ * @param {string|null} patientId  
+ * @param {string}      [prescriberId] 
  * @returns {{ prescriptions: Array, loading: boolean, error: string|null, refetch: Function }}
  */
 export default function usePrescriptions(patientId, prescriberId) {

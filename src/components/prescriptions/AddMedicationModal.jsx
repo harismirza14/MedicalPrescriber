@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addPrescription, fetchPrescriptions } from '../../store/MedicationSlice';
+import { addPrescription } from '../../store/MedicationSlice';
 import ExternalRxDrawer from './ExternalRxDrawer';
 
-const PATIENT_ID = '080392';
-
-export default function AddMedicationModal({ onClose, isOpen, onOpenSendRx }) {
+export default function AddMedicationModal({
+  onClose,
+  isOpen,
+  onOpenSendRx,
+  patientId,
+  prescriberId,
+  onPrescriptionAdded,
+}) {
   const dispatch = useDispatch();
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExternalRx, setShowExternalRx] = useState(false);
@@ -26,7 +31,7 @@ export default function AddMedicationModal({ onClose, isOpen, onOpenSendRx }) {
   const handleExternalSubmit = async (serverPayload) => {
     try {
       await dispatch(addPrescription(serverPayload)).unwrap();
-      dispatch(fetchPrescriptions(PATIENT_ID));
+      onPrescriptionAdded?.();
     } catch (err) {
       console.error('Failed to save external prescription:', err);
       alert(`Error saving prescription: ${err.message || err}`);
@@ -45,6 +50,8 @@ export default function AddMedicationModal({ onClose, isOpen, onOpenSendRx }) {
           onClose();
         }}
         onSubmit={handleExternalSubmit}
+        patientId={patientId}
+        prescriberId={prescriberId}
       />
     );
   }

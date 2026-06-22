@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addPrescription, updatePrescription, formatStatusLabel } from '../../store/MedicationSlice';
-import { fetchMedications, fetchPharmaciesByZip } from '../../store/api';
+import { fetchMedications, fetchPharmaciesByZip } from '../../api/masterDataApi';
 
 const DOSE_OPTIONS = ['1 tablet', '2 tablets', '1mL', '2 capsules', '5 mL', '10 mL'];
 const DEFAULT_ZIP = '22903';

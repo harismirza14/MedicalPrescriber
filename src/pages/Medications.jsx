@@ -20,7 +20,7 @@ import ExternalRxDrawer from "../components/prescriptions/ExternalRxDrawer";
 import UpdateMedicationDrawer from "../components/prescriptions/UpdateMedicationDrawer";
 import PharmacySelectDrawer from "../components/pharmacy/PharmacySelectDrawer";
 
-export default function MedicationsPage({
+export default function Medications({
   role,
   userId,
   patientId: propPatientId,
@@ -260,6 +260,9 @@ export default function MedicationsPage({
                 setWizardTargetStep(1);
                 setShowAddRx(true);
               }}
+              patientId={effectivePatientId}
+              prescriberId={userId}
+              onPrescriptionAdded={refetchPrescriptions}
             />
           )}
           <AddRX

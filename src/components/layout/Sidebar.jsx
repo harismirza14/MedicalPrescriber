@@ -36,7 +36,7 @@ export default function Sidebar() {
             <div className="mb-3">
               <p className="font-bold text-lg text-gray-900">{user.name}</p>
               <p className="text-sm text-gray-500 mt-0.5">
-                {user.patient_id} -{" "}
+                {user.roleSpecificId} -{" "}
                 {user.dob ? new Date(user.dob).getFullYear() : "N/A"}
               </p>
             </div>
@@ -71,7 +71,7 @@ export default function Sidebar() {
             <div className="mb-3">
               <p className="font-bold text-lg text-gray-900">{user.name}</p>
               <p className="text-sm text-gray-500 mt-0.5">
-                {user.prescriber_id} • Prescriber
+                {user.roleSpecificId} • Prescriber
               </p>
             </div>
             <div className="space-y-2 text-sm text-gray-600">

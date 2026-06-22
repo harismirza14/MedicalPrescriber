@@ -35,6 +35,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.role = null;
+      state.token = null;
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
@@ -51,10 +52,12 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.role = action.payload.role;
+        state.token = action.payload.token;
         state.isAuthenticated = true;
         localStorage.setItem("auth", JSON.stringify({
           user: state.user,
           role: state.role,
+          token: state.token, 
           isAuthenticated: true,
         }));
       })
