@@ -2,7 +2,7 @@ import React from 'react';
 import { createBrowserRouter, Navigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import DashboardLayout from './components/layout/DashboardLayout';
+import DashboardLayout from './components/templates/DashboardLayout/DashboardLayout';
 import LoginPage from './pages/Login';
 import Medications from './pages/Medications';
 import PatientSelector from './pages/PatientSelector';

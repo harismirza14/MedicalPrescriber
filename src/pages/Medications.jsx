@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -11,44 +11,30 @@ import { fetchPdmp } from "../api/patientApi";
 import { fetchPharmaciesByZip } from "../api/masterDataApi";
 import usePrescriptions from "../hooks/usePrescriptions";
 import usePatient from "../hooks/usePatient";
-import PDMPCard from "../components/pharmacy/PDMPCard";
-import PharmacyCard from "../components/pharmacy/PharmacyCard";
-import MedicationCard from "../components/prescriptions/MedicationCard";
-import AddMedicationModal from "../components/prescriptions/AddMedicationModal";
-import AddRX from "../components/prescriptions/AddRX";
-import ExternalRxDrawer from "../components/prescriptions/ExternalRxDrawer";
-import UpdateMedicationDrawer from "../components/prescriptions/UpdateMedicationDrawer";
-import PharmacySelectDrawer from "../components/pharmacy/PharmacySelectDrawer";
+import PDMPCard from "../components/organisms/PDMPCard/PDMPCard";
+import PharmacyCard from "../components/organisms/PharmacyCard/PharmacyCard";
+import MedicationCard from "../components/organisms/MedicationCard/MedicationCard";
+import AddMedicationModal from "../components/organisms/AddMedicationModal/AddMedicationModal";
+import AddRX from "../components/organisms/AddRX/AddRX";
+import ExternalRxDrawer from "../components/organisms/ExternalRxDrawer/ExternalRxDrawer";
+import UpdateMedicationDrawer from "../components/organisms/UpdateMedicationDrawer/UpdateMedicationDrawer";
+import PharmacySelectDrawer from "../components/organisms/PharmacySelectDrawer/PharmacySelectDrawer";
 
-export default function Medications({
-  role,
-  userId,
-  patientId: propPatientId,
-}) {
+export default function Medications({ role, userId, patientId: propPatientId }) {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const urlPatientId = searchParams.get("patientId");
   const effectivePatientId = propPatientId || urlPatientId;
 
-  // ── Prescriptions (Redux-backed) ──────────────────────────────────
   const {
     prescriptions: medications,
     loading,
     error,
     refetch: refetchPrescriptions,
-  } = usePrescriptions(
-    effectivePatientId,
-    role === "doctor" ? userId : undefined,
-  );
+  } = usePrescriptions(effectivePatientId, role === "doctor" ? userId : undefined);
 
-  // ── Patient data ──────────────────────────────────────────────────
-  const {
-    patient,
-    loading: patientLoading,
-    error: patientError,
-  } = usePatient(effectivePatientId);
+  const { patient, error: patientError } = usePatient(effectivePatientId);
 
-  // ── PDMP & pharmacy (still fetched locally) ───────────────────────
   const [pdmpData, setPdmpData] = useState(null);
   const [pharmacyData, setPharmacyData] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -67,17 +53,14 @@ export default function Medications({
   };
 
   const handlePharmacyChange = (newPharmacy) => setPharmacyData(newPharmacy);
-  const fetchingExtras = useRef(false);
 
+  // Fetch PDMP and pharmacy data independently
   useEffect(() => {
     if (!effectivePatientId) {
       setPdmpData(null);
       setPharmacyData(null);
       return;
     }
-    if (fetchingExtras.current) return;
-    fetchingExtras.current = true;
-
     Promise.all([
       fetchPdmp(effectivePatientId),
       fetchPharmaciesByZip("22903"),
@@ -86,18 +69,11 @@ export default function Medications({
         setPdmpData(pdmp);
         setPharmacyData(pharmacies?.length ? pharmacies[0] : null);
       })
-      .catch((err) => {
-        console.error("Failed to load supplementary data:", err);
-      })
-      .finally(() => {
-        fetchingExtras.current = false;
-      });
+      .catch((err) => console.error("Failed to load supplementary data:", err));
   }, [effectivePatientId]);
 
   const handleEditMedication = (med) => {
-    if (role !== "doctor" || String(med.prescriber_id) !== String(userId))
-      return;
-
+    if (role !== "doctor" || String(med.prescriber_id) !== String(userId)) return;
     setEditingMedication(med);
     if (med.status === "external") {
       setExternalInitialData({
@@ -138,33 +114,31 @@ export default function Medications({
       alert("Cannot update: missing prescription ID");
       return;
     }
-
     const updates = {
       dosage: editingMedication.dosage,
       instructions: editingMedication.instructions,
       patient_note: editingMedication.patientNote,
       name: editingMedication.name,
       external_prescriber:
-        editingMedication.external_prescriber ||
-        editingMedication.externalPrescriber,
+        editingMedication.external_prescriber || editingMedication.externalPrescriber,
     };
-    if (editingMedication.pharmacy_id)
-      updates.pharmacy_id = editingMedication.pharmacy_id;
+    if (editingMedication.pharmacy_id) updates.pharmacy_id = editingMedication.pharmacy_id;
     if (editingMedication.med_id) updates.med_id = editingMedication.med_id;
     if (editingMedication.form) updates.form = editingMedication.form;
 
     try {
-      await dispatch(
-        updatePrescription({ id: editingMedication.id, updates }),
-      ).unwrap();
+      await dispatch(updatePrescription({ id: editingMedication.id, updates })).unwrap();
       refetchPrescriptions();
-
       setShowUpdateRx(false);
       setEditingMedication(null);
-    } catch {}
+    } catch {
+      // Error is already in Redux state and displayed via the error banner.
+    }
   };
 
-  if (patientError) return <div className="p-4 text-red-600">{patientError}</div>;
+  if (patientError) {
+    return <div className="p-4 text-red-600">{patientError}</div>;
+  }
 
   if (!effectivePatientId) {
     return (
@@ -218,17 +192,14 @@ export default function Medications({
         </div>
 
         <div className="space-y-4">
-          {loading && (
-            <div className="text-center py-4">Loading prescriptions...</div>
-          )}
+          {loading && <div className="text-center py-4">Loading prescriptions...</div>}
           {!loading && medications.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               No medications found for this patient.
             </div>
           )}
           {medications.map((med, idx) => {
-            const canEdit =
-              role === "doctor" && String(med.prescriber_id) === String(userId);
+            const canEdit = role === "doctor" && String(med.prescriber_id) === String(userId);
             return (
               <MedicationCard
                 key={med.prescription_id || med.id || idx}
@@ -322,7 +293,9 @@ export default function Medications({
                 setShowExternalRx(false);
                 setExternalInitialData(null);
                 setEditingMedication(null);
-              } catch {}
+              } catch {
+                // Error is handled via Redux state
+              }
             }}
           />
         </>
