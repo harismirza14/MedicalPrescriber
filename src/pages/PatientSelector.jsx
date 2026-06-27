@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useDoctorPatients from "../hooks/useDoctorPatients";
+import AddPatientModal from "../components/organisms/AddPatientModal/AddPatientModal";
 import { Plus } from "lucide-react";
 
 const calculateAge = (dob) => {
@@ -19,6 +20,7 @@ export default function PatientSelector({ doctorId }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [genderFilter, setGenderFilter] = useState("all");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isAddPatientModalOpen, setIsAddPatientModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // Debounce search
@@ -41,7 +43,7 @@ export default function PatientSelector({ doctorId }) {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Select a Patient</h1>
         <button
-          onClick={() => navigate(`/add-patient?doctorId=${doctorId}`)}
+          onClick={() => setIsAddPatientModalOpen(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1"
         >
           <Plus className="w-4 h-4" />
@@ -81,24 +83,12 @@ export default function PatientSelector({ doctorId }) {
           <table className="min-w-full bg-white border border-gray-200 rounded-lg">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-                  Patient ID
-                </th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-                  Name
-                </th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-                  Age
-                </th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-                  Contact
-                </th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-                  Gender
-                </th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-                  Insurance
-                </th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Patient ID</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Name</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Age</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Contact</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Gender</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Insurance</th>
               </tr>
             </thead>
             <tbody>
@@ -109,27 +99,23 @@ export default function PatientSelector({ doctorId }) {
                   onClick={() => handlePatientSelect(patient)}
                 >
                   <td className="px-4 py-2 text-sm">{patient.patient_id}</td>
-                  <td className="px-4 py-2 text-sm font-medium">
-                    {patient.name}
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    {calculateAge(patient.dob)}
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    {patient.phone_number || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    {patient.gender || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    {patient.insurance || "N/A"}
-                  </td>
+                  <td className="px-4 py-2 text-sm font-medium">{patient.name}</td>
+                  <td className="px-4 py-2 text-sm">{calculateAge(patient.dob)}</td>
+                  <td className="px-4 py-2 text-sm">{patient.phone_number || "N/A"}</td>
+                  <td className="px-4 py-2 text-sm">{patient.gender || "N/A"}</td>
+                  <td className="px-4 py-2 text-sm">{patient.insurance || "N/A"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+      <AddPatientModal
+        isOpen={isAddPatientModalOpen}
+        onClose={() => setIsAddPatientModalOpen(false)}
+        doctorId={doctorId}
+      />
     </div>
   );
 }

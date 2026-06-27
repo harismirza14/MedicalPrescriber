@@ -3,12 +3,24 @@ import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from "@/store/authSlice";
 
-const navItems = [{ label: "Medications", path: "/medications" }];
-
 export default function Sidebar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, role } = useSelector((state) => state.auth);
+
+  const navItems =
+    role === "patient"
+      ? [
+          { label: "Medications", path: "/medications" },
+          { label: "Care Team", path: "/care-team" },
+        ]
+      : role === "doctor"
+      ? [
+          { label: "Profile", path: "/profile" },
+          { label: "Patient Selector", path: "/select-patient" },
+          { label: "Schedule", path: "/schedule" },
+        ]
+      : [];
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "Not Scheduled";
@@ -22,10 +34,6 @@ export default function Sidebar() {
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
-  };
-
-  const handleSwitchPatient = () => {
-    navigate("/select-patient");
   };
 
   return (
@@ -101,17 +109,6 @@ export default function Sidebar() {
           ))}
         </ul>
       </nav>
-
-      {role === "doctor" && (
-        <div className="p-4 border-t border-gray-100">
-          <button
-            onClick={handleSwitchPatient}
-            className="w-full py-2 px-3 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-          >
-            Switch Patient
-          </button>
-        </div>
-      )}
 
       <div className="p-4 border-t border-gray-100">
         <button
