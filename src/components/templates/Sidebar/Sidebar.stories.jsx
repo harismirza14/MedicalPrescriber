@@ -1,6 +1,5 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { MemoryRouter } from "react-router-dom";
 import { configureStore } from "@reduxjs/toolkit";
 import Sidebar from "./Sidebar";
 
@@ -21,15 +20,7 @@ const MockStoreDecorator = (initialState) => (Story) => {
 export default {
   title: "Layout/Sidebar",
   component: Sidebar,
-  decorators: [
-    (Story) => (
-      <MemoryRouter>
-        <div style={{ height: "100vh", position: "relative" }}>
-          <Story />
-        </div>
-      </MemoryRouter>
-    ),
-  ],
+  // ❌ Remove the MemoryRouter decorator – the global preview provides it.
 };
 
 export const DoctorRole = {

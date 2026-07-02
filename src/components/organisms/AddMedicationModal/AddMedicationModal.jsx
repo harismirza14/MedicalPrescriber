@@ -60,19 +60,19 @@ export default function AddMedicationModal({
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity z-40"
+        className="fixed inset-0 bg-black/50 transition-opacity z-40"
         onClick={onClose}
       />
 
       {/* Drawer panel from right */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out">
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out">
         <div className="flex flex-col h-full">
 
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-bold text-gray-800">Add Medication</h2>
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">Add Medication</h2>
             <button
-              className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl leading-none"
               onClick={onClose}
             >
               &times;
@@ -87,13 +87,13 @@ export default function AddMedicationModal({
               <div
                 className={`border rounded-lg p-4 cursor-pointer transition ${
                   selectedOption === 'send'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
                 }`}
                 onClick={() => setSelectedOption('send')}
               >
-                <h3 className="font-semibold text-gray-900">Send a RX to a pharmacy</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Send a RX to a pharmacy</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Create and electronically send a new prescription directly to the patient's selected pharmacy.
                 </p>
               </div>
@@ -102,13 +102,13 @@ export default function AddMedicationModal({
               <div
                 className={`border rounded-lg p-4 cursor-pointer transition ${
                   selectedOption === 'external'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
                 }`}
                 onClick={() => setSelectedOption('external')}
               >
-                <h3 className="font-semibold text-gray-900">Record an external RX</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Record an external RX</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Document a medication that was prescribed outside of Confident for care coordination and record keeping purposes.
                 </p>
               </div>
@@ -117,9 +117,9 @@ export default function AddMedicationModal({
           </div>
 
           {/* Footer */}
-          <div className="border-t p-6 flex justify-end gap-3">
+          <div className="border-t border-gray-200 dark:border-gray-700 p-6 flex justify-end gap-3">
             <button
-              className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
               onClick={onClose}
             >
               Cancel
@@ -128,7 +128,7 @@ export default function AddMedicationModal({
               className={`px-4 py-2 text-sm rounded-md font-medium ${
                 selectedOption
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               }`}
               onClick={handleContinue}
               disabled={!selectedOption}

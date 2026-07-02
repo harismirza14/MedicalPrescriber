@@ -1,13 +1,13 @@
 import MedicationActionDrawer from '../MedicationActionDrawer/MedicationActionDrawer';
-import {useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { discontinuePrescription } from '../../../store/MedicationSlice';
 
-export default function DisContinueDrawer({ isOpen, onClose, medication}) {
+export default function DisContinueDrawer({ isOpen, onClose, medication }) {
   const dispatch = useDispatch();
   const handleConfirm = (id, reason, date) => {
     dispatch(discontinuePrescription({ id, reason, date }));
     onClose();
-  }
+  };
   return (
     <MedicationActionDrawer
       isOpen={isOpen}

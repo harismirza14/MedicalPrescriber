@@ -56,7 +56,6 @@ export default function UpdateMedicationDrawer({
         .then((results) => {
           setPharmacies(results);
           setNoResults(results.length === 0);
-          // Pre-select currently assigned pharmacy if it exists in results
           const matched = results.find((p) => p.name === med.pharmacy);
           setSelectedPharmacy(matched || (results.length ? results[0] : null));
         })
@@ -86,7 +85,6 @@ export default function UpdateMedicationDrawer({
   const handleSelectPharmacy = (pharmacy) => {
     setSelectedPharmacy(pharmacy);
     onChangePharmacy?.(pharmacy);
-    // Update zip to the selected pharmacy's zipcode and refresh list
     if (pharmacy.zipcode) {
       setZipInput(pharmacy.zipcode);
       setActiveZip(pharmacy.zipcode);
@@ -112,13 +110,13 @@ export default function UpdateMedicationDrawer({
         className="fixed inset-0 bg-black/40 z-40"
         onClick={() => !loading && onClose()}
       />
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-slate-50 shadow-2xl flex flex-col border-l border-gray-200">
-        <div className="px-6 py-5 bg-white border-b border-gray-100 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900">Update Medication</h2>
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-slate-50 dark:bg-gray-900 shadow-2xl flex flex-col border-l border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-5 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Update Medication</h2>
           <button
             onClick={onClose}
             disabled={loading}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-200 disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -126,53 +124,53 @@ export default function UpdateMedicationDrawer({
 
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
           {/* Medication Card */}
-          <div className="border border-gray-200 bg-white rounded-xl p-4 flex items-start gap-4 shadow-sm relative">
-            <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
+          <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl p-4 flex items-start gap-4 shadow-sm relative">
+            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
               <CirclePlus className="w-6 h-6 rotate-45" />
             </div>
             <div className="min-w-0 flex-1 pr-16">
-              <h4 className="font-bold text-base text-gray-900">{medName}</h4>
-              <p className="text-xs text-gray-500 mt-1">{medInstructions}</p>
+              <h4 className="font-bold text-base text-gray-900 dark:text-white">{medName}</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{medInstructions}</p>
             </div>
             <button
               onClick={onChangeMedication}
-              className="absolute right-4 top-4 text-xs font-bold text-blue-600 hover:text-blue-700"
+              className="absolute right-4 top-4 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
             >
               Change
             </button>
           </div>
 
           {/* Pharmacy Card */}
-          <div className="border border-gray-200 bg-white rounded-xl p-4 shadow-sm relative">
+          <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm relative">
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
+              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                 <Hospital className="w-6 h-6" />
               </div>
               <div className="min-w-0 flex-1 pr-16">
-                <h4 className="font-bold text-base text-gray-900 truncate">
+                <h4 className="font-bold text-base text-gray-900 dark:text-white truncate">
                   {currentPharmacyName}
                 </h4>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {currentPharmacyAddress}
                 </p>
               </div>
               <button
                 onClick={() => setShowPharmacySelector(!showPharmacySelector)}
-                className="absolute right-4 top-4 text-xs font-bold text-blue-600 hover:text-blue-700"
+                className="absolute right-4 top-4 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
               >
                 Change
               </button>
             </div>
 
             {showPharmacySelector && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex gap-2 mb-3">
                   <input
                     type="text"
                     placeholder="Search pharmacy by name"
                     value={pharmacySearch}
                     onChange={(e) => setPharmacySearch(e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   />
                   <div className="w-28">
                     <input
@@ -181,7 +179,7 @@ export default function UpdateMedicationDrawer({
                       value={zipInput}
                       onChange={(e) => setZipInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleZipSearch()}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-center"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                     />
                   </div>
                   <button
@@ -193,12 +191,12 @@ export default function UpdateMedicationDrawer({
                 </div>
 
                 {loadingPharm && (
-                  <p className="text-xs text-gray-400 text-center py-4">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
                     Loading pharmacies...
                   </p>
                 )}
                 {!loadingPharm && noResults && (
-                  <div className="text-center py-6 text-sm text-gray-400 border border-dashed rounded-xl">
+                  <div className="text-center py-6 text-sm text-gray-400 dark:text-gray-500 border border-dashed dark:border-gray-700 rounded-xl">
                     No pharmacies found for zip code "{activeZip}"
                   </div>
                 )}
@@ -206,7 +204,7 @@ export default function UpdateMedicationDrawer({
                   !noResults &&
                   filteredPharmacies.length > 0 && (
                     <>
-                      <p className="text-xs text-gray-400 mb-2">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
                         Showing pharmacies near <strong>{activeZip}</strong>
                       </p>
                       <div className="space-y-2.5 max-h-64 overflow-y-auto">
@@ -222,31 +220,31 @@ export default function UpdateMedicationDrawer({
                               onClick={() => handleSelectPharmacy(pharmacy)}
                               className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                                 isSelected
-                                  ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-500"
-                                  : "border-gray-200 bg-white hover:border-gray-300"
+                                  ? "border-blue-500 dark:border-blue-400 bg-blue-50/30 dark:bg-blue-900/20 ring-1 ring-blue-500 dark:ring-blue-400"
+                                  : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600"
                               }`}
                             >
                               <div className="flex justify-between gap-3">
                                 <div className="flex items-start gap-3 flex-1">
                                   <div
-                                    className={`w-4 h-4 rounded-full border-2 mt-0.5 ${isSelected ? "border-blue-600" : "border-gray-300"}`}
+                                    className={`w-4 h-4 rounded-full border-2 mt-0.5 ${isSelected ? "border-blue-600 dark:border-blue-400" : "border-gray-300 dark:border-gray-600"}`}
                                   >
                                     {isSelected && (
-                                      <div className="w-2 h-2 rounded-full bg-blue-600 mx-auto mt-0.5" />
+                                      <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 mx-auto mt-0.5" />
                                     )}
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-bold text-gray-800 truncate">
+                                    <p className="text-sm font-bold text-gray-800 dark:text-gray-100 truncate">
                                       {pharmacy.name}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-1">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                       {pharmacy.address}
                                     </p>
-                                    <p className="text-xs text-gray-400 mt-0.5">
+                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                                       {pharmacy.phone}
                                     </p>
                                     {is24Hours && (
-                                      <p className="text-xs text-green-600 font-medium mt-1">
+                                      <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">
                                         Open 24 hours
                                       </p>
                                     )}
@@ -255,8 +253,8 @@ export default function UpdateMedicationDrawer({
                                 <span
                                   className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                                     is24Hours
-                                      ? "bg-green-100 text-green-700"
-                                      : "bg-gray-100 text-gray-600"
+                                      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                                   }`}
                                 >
                                   {pharmacy.hours || "N/A"}
@@ -273,11 +271,11 @@ export default function UpdateMedicationDrawer({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-between bg-white">
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-800">
           <button
             onClick={onClose}
             disabled={loading}
-            className="text-sm font-bold text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            className="text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-50"
           >
             Cancel
           </button>
@@ -286,7 +284,7 @@ export default function UpdateMedicationDrawer({
             disabled={loading}
             className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-colors ${
               loading
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >

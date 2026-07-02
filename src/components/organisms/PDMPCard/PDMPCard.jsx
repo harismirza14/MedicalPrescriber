@@ -15,14 +15,14 @@ export default function PDMPCard({ pdmp }) {
   };
 
   return (
-    <div className=" bg-white p-4 h-full">
+    <div className="bg-white dark:bg-gray-800 p-4 h-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-sm font-semibold text-gray-800">
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
           Virginia PDMP Check
         </h2>
         <button
-          className="text-xs font-medium text-blue-600 hover:underline bg-transparent border-none p-0 cursor-pointer shrink-0 ml-2"
+          className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline bg-transparent border-none p-0 cursor-pointer shrink-0 ml-2"
           onClick={() => console.log("Check PDMP clicked")}
         >
           Check PDMP
@@ -30,12 +30,12 @@ export default function PDMPCard({ pdmp }) {
       </div>
 
       {/* Summary */}
-      <p className="text-xs text-gray-500 leading-relaxed mb-3">
+      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
         {pdmp?.summary || "No PDMP summary available."}
       </p>
 
       {/* Footer */}
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-gray-400 dark:text-gray-500">
         Checked on {formatDate(pdmp?.lastChecked)}
       </p>
     </div>

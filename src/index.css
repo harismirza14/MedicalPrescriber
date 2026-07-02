@@ -7,7 +7,5 @@
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: #f9fafb;
+  @apply m-0 p-0 bg-gray-50 dark:bg-gray-900 transition-colors duration-200;
 }

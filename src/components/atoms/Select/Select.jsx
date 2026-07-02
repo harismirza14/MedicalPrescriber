@@ -3,7 +3,7 @@ import React from "react";
 export default function Select({ children, className = "", ...props }) {
   return (
     <select
-      className={`w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${className}`}
+      className={`w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${className}`}
       {...props}
     >
       {children}

@@ -2,14 +2,27 @@ import React from "react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import AddRX from "./AddRX";
+import client from "@/api/client";
 
-const MockStoreDecorator = (initialState) => (Story) => {
-  const store = configureStore({
+const mockMedications = [
+  { med_id: 1, name: "Amoxicillin" },
+  { med_id: 2, name: "Lisinopril" },
+  { med_id: 3, name: "Metformin" },
+];
+
+const createMockStore = () => {
+  return configureStore({
     reducer: {
-      medications: (state = initialState.medications || { loading: false, error: null }) => state,
+      medications: (state = { list: [], loading: false, error: null }) => state,
     },
-    preloadedState: initialState,
+    preloadedState: {
+      medications: { list: [], loading: false, error: null },
+    },
   });
+};
+
+const MockStoreDecorator = (Story) => {
+  const store = createMockStore();
   return (
     <Provider store={store}>
       <Story />
@@ -20,7 +33,22 @@ const MockStoreDecorator = (initialState) => (Story) => {
 export default {
   title: "Prescriptions/AddRX",
   component: AddRX,
-  decorators: [MockStoreDecorator({ medications: { loading: false, error: null } })],
+  decorators: [MockStoreDecorator],
+};
+
+const mockMedicationsApi = (delay = 0) => {
+  const originalGet = client.get;
+  client.get = (url) => {
+    if (url === '/medications') {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve({ data: mockMedications }), delay);
+      });
+    }
+    return originalGet(url);
+  };
+  return () => {
+    client.get = originalGet;
+  };
 };
 
 export const DefaultOpen = {
@@ -29,6 +57,7 @@ export const DefaultOpen = {
     patientId: "123",
     prescriberId: "456",
   },
+  loaders: [async () => mockMedicationsApi()],
 };
 
 export const LoadingState = {
@@ -37,7 +66,7 @@ export const LoadingState = {
     patientId: "123",
     prescriberId: "456",
   },
-  decorators: [MockStoreDecorator({ medications: { loading: true, error: null } })],
+  loaders: [async () => mockMedicationsApi(2000)], 
 };
 
 export const EditMode = {
@@ -54,6 +83,7 @@ export const EditMode = {
       startAtStep: 2,
     },
   },
+  loaders: [async () => mockMedicationsApi()],
 };
 
 export const Closed = {

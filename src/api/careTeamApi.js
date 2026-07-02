@@ -4,3 +4,13 @@ export const fetchCareTeam = async (patientId) => {
   const res = await client.get(`/patients/${patientId}/care-team`);
   return res.data;
 };
+
+export const addCareTeamMember = async (patientId, data) => {
+  const res = await client.post(`/patients/${patientId}/care-team`, data);
+  return res.data;
+};
+
+export const removeCareTeamMember = async (patientId, memberId) => {
+  const res = await client.delete(`/patients/${patientId}/care-team/${memberId}`);
+  return res.data;
+};

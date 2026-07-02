@@ -96,18 +96,18 @@ export default function ExternalRxDrawer({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        className="fixed inset-0 bg-black/50 z-50"
         onClick={() => !loading && handleClose()}
       />
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl z-50 flex flex-col">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
             {isEditMode ? "Edit External RX" : "External RX"}
           </h2>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors disabled:opacity-50"
+            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
@@ -116,11 +116,11 @@ export default function ExternalRxDrawer({
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-semibold text-gray-700">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Drug Name
               </label>
               {hasError && (
-                <span className="text-xs font-medium text-red-500">
+                <span className="text-xs font-medium text-red-500 dark:text-red-400">
                   Required
                 </span>
               )}
@@ -130,16 +130,16 @@ export default function ExternalRxDrawer({
               placeholder="Enter medication name"
               value={selectedDrug}
               onChange={(e) => setSelectedDrug(e.target.value)}
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
                 hasError
-                  ? "border-red-400 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-blue-500"
+                  ? "border-red-400 dark:border-red-500 focus:ring-red-400"
+                  : "border-gray-300 dark:border-gray-600 focus:ring-blue-500"
               }`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
               Drug Information
             </label>
             <textarea
@@ -147,28 +147,28 @@ export default function ExternalRxDrawer({
               placeholder="Record dosage, frequency, and other sig information"
               value={drugInfo}
               onChange={(e) => setDrugInfo(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
               Name of External Prescriber
             </label>
             <input
               type="text"
               value={externalPrescriber}
               onChange={(e) => setExternalPrescriber(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
         </div>
 
-        <div className="border-t border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className="border-t border-gray-100 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -177,7 +177,7 @@ export default function ExternalRxDrawer({
             disabled={loading}
             className={`px-5 py-2 text-sm font-medium rounded-lg transition-colors ${
               loading
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >

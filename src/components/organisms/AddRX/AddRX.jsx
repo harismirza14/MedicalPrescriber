@@ -13,6 +13,7 @@ import { Check, X, Pill } from 'lucide-react';
 const DOSE_OPTIONS = ['1 tablet', '2 tablets', '1mL', '2 capsules', '5 mL', '10 mL'];
 const DEFAULT_ZIP = '22903';
 
+// ─── Step 1: Select ────────────────────────────────────────────────
 function StepSelect({ selectedMed, onSelect, onCancel, onContinue, medicationNames }) {
   const [search, setSearch] = useState('');
   const filtered = useMemo(() =>
@@ -36,22 +37,22 @@ function StepSelect({ selectedMed, onSelect, onCancel, onContinue, medicationNam
             key={med}
             onClick={() => onSelect(med)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer border transition-colors ${
-              selectedMed === med ? 'bg-blue-50 border-blue-200' : 'bg-white border-transparent hover:bg-gray-50'
+              selectedMed === med
+                ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
+                : 'bg-white dark:bg-gray-800 border-transparent hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center ${
-              selectedMed === med ? 'border-blue-600 bg-blue-600' : 'border-gray-400 bg-white'
+              selectedMed === med ? 'border-blue-600 bg-blue-600' : 'border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700'
             }`}>
-              {selectedMed === med && (
-                <Check className="w-2.5 h-2.5 text-white" />
-              )}
+              {selectedMed === med && <Check className="w-2.5 h-2.5 text-white" />}
             </div>
-            <span className="text-sm text-gray-800">{med}</span>
+            <span className="text-sm text-gray-800 dark:text-gray-200">{med}</span>
           </label>
         ))}
-        {filtered.length === 0 && <p className="text-sm text-gray-400 text-center py-8">No medications found</p>}
+        {filtered.length === 0 && <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8">No medications found</p>}
       </div>
-      <div className="px-6 pt-4 pb-5 border-t border-gray-100 flex justify-between mt-auto">
+      <div className="px-6 pt-4 pb-5 border-t border-gray-100 dark:border-gray-700 flex justify-between mt-auto">
         <Button onClick={onCancel} variant="ghost">Cancel</Button>
         <Button onClick={onContinue} disabled={!selectedMed} variant="solid">Continue</Button>
       </div>
@@ -59,6 +60,7 @@ function StepSelect({ selectedMed, onSelect, onCancel, onContinue, medicationNam
   );
 }
 
+// ─── Step 2: Detail ──────────────────────────────────────────────────
 function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, isEditMode, medicationNames }) {
   const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
   const [drugSearch, setDrugSearch] = useState(formData.drug || selectedMed || '');
@@ -77,7 +79,7 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
     <div className="flex flex-col h-full min-h-0">
       <div className="flex-1 overflow-y-auto px-6 pb-3 space-y-4">
         <div className="relative">
-          <Label>Drug</Label>
+          <Label className="dark:text-gray-300">Drug</Label>
           <div className="relative">
             <Input
               type="text"
@@ -101,14 +103,14 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
                   handleChange('drug', '');
                   setShowDrugList(false);
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-base"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-base"
               >
                 ×
               </button>
             )}
           </div>
           {showDrugList && filteredDrugs.length > 0 && (
-            <ul className="absolute z-10 left-0 right-0 mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-auto">
+            <ul className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-auto">
               {filteredDrugs.map(drug => (
                 <li
                   key={drug}
@@ -117,7 +119,7 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
                     handleChange('drug', drug);
                     setShowDrugList(false);
                   }}
-                  className="px-3 py-2 text-sm text-gray-800 hover:bg-blue-50 cursor-pointer"
+                  className="px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   {drug}
                 </li>
@@ -127,25 +129,25 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div><Label>Quantity</Label><Input type="text" placeholder="Enter Quantity" value={formData.quantity || ''} onChange={e => handleChange('quantity', e.target.value)} /></div>
-          <div><Label>Dose</Label><Select value={formData.dose || ''} onChange={e => handleChange('dose', e.target.value)}><option value="">Select item</option>{DOSE_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}</Select></div>
+          <div><Label className="dark:text-gray-300">Quantity</Label><Input type="text" placeholder="Enter Quantity" value={formData.quantity || ''} onChange={e => handleChange('quantity', e.target.value)} /></div>
+          <div><Label className="dark:text-gray-300">Dose</Label><Select value={formData.dose || ''} onChange={e => handleChange('dose', e.target.value)}><option value="">Select item</option>{DOSE_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}</Select></div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div><Label>Frequency</Label><Input type="text" placeholder="Enter or Select Frequency" value={formData.frequency || ''} onChange={e => handleChange('frequency', e.target.value)} /></div>
-          <div><Label>Duration</Label><div className="relative"><Input type="text" placeholder="Enter Duration" value={formData.duration || ''} onChange={e => handleChange('duration', e.target.value)} className="pr-12" /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">Days</span></div></div>
+          <div><Label className="dark:text-gray-300">Frequency</Label><Input type="text" placeholder="Enter or Select Frequency" value={formData.frequency || ''} onChange={e => handleChange('frequency', e.target.value)} /></div>
+          <div><Label className="dark:text-gray-300">Duration</Label><div className="relative"><Input type="text" placeholder="Enter Duration" value={formData.duration || ''} onChange={e => handleChange('duration', e.target.value)} className="pr-12" /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500">Days</span></div></div>
         </div>
 
-        <div><Label>Sig</Label><Input type="text" placeholder="Enter Sig (Directions)" value={formData.sig || ''} onChange={e => handleChange('sig', e.target.value)} /></div>
+        <div><Label className="dark:text-gray-300">Sig</Label><Input type="text" placeholder="Enter Sig (Directions)" value={formData.sig || ''} onChange={e => handleChange('sig', e.target.value)} /></div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div><Label>Dispense Amount</Label><Input type="text" placeholder="Enter Dispense Amount" value={formData.dispenseAmount || ''} onChange={e => handleChange('dispenseAmount', e.target.value)} /></div>
-          <div><Label>Refills</Label><Select value={formData.refills ?? 0} onChange={e => handleChange('refills', Number(e.target.value))}>{[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}</Select></div>
+          <div><Label className="dark:text-gray-300">Dispense Amount</Label><Input type="text" placeholder="Enter Dispense Amount" value={formData.dispenseAmount || ''} onChange={e => handleChange('dispenseAmount', e.target.value)} /></div>
+          <div><Label className="dark:text-gray-300">Refills</Label><Select value={formData.refills ?? 0} onChange={e => handleChange('refills', Number(e.target.value))}>{[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}</Select></div>
         </div>
 
-        <div><Label>Associated Diagnoses</Label><Input type="text" value={formData.diagnoses || ''} onChange={e => handleChange('diagnoses', e.target.value)} /></div>
+        <div><Label className="dark:text-gray-300">Associated Diagnoses</Label><Input type="text" value={formData.diagnoses || ''} onChange={e => handleChange('diagnoses', e.target.value)} /></div>
       </div>
-      <div className="px-6 pt-4 pb-5 border-t border-gray-100 flex justify-between mt-auto">
+      <div className="px-6 pt-4 pb-5 border-t border-gray-100 dark:border-gray-700 flex justify-between mt-auto">
         <Button onClick={onBack} variant="ghost">{isEditMode ? 'Cancel' : 'Back'}</Button>
         <Button onClick={onContinue} disabled={!drugSearch.trim()} variant="solid">Continue</Button>
       </div>
@@ -153,6 +155,7 @@ function StepDetail({ selectedMed, formData, setFormData, onBack, onContinue, is
   );
 }
 
+// ─── Step 3: Review ──────────────────────────────────────────────────
 function StepReview({ selectedMed, formData, onBack, onSendRx, initialPharmacy, isIsolatedRoute, loading }) {
   const [zipInput, setZipInput] = useState(DEFAULT_ZIP);
   const [activeZip, setActiveZip] = useState(DEFAULT_ZIP);
@@ -192,13 +195,13 @@ function StepReview({ selectedMed, formData, onBack, onSendRx, initialPharmacy, 
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-5">
-        <div className="border border-blue-500 bg-white rounded-xl p-4 flex items-start gap-4 shadow-sm relative">
-          <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600">
+        <div className="border border-blue-500 dark:border-blue-400 bg-white dark:bg-gray-800 rounded-xl p-4 flex items-start gap-4 shadow-sm relative">
+          <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
             <Pill className="w-5 h-5" />
           </div>
           <div className="min-w-0 flex-1 pr-14">
-            <h4 className="font-bold text-sm text-gray-900 truncate">{formData.drug || selectedMed || 'Medication'}</h4>
-            <p className="text-xs text-gray-500 mt-1">{formattedInstructions}</p>
+            <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate">{formData.drug || selectedMed || 'Medication'}</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formattedInstructions}</p>
           </div>
           {!isIsolatedRoute && (
             <Button onClick={onBack} variant="ghost" className="absolute right-4 top-4">Change</Button>
@@ -206,22 +209,34 @@ function StepReview({ selectedMed, formData, onBack, onSendRx, initialPharmacy, 
         </div>
 
         <div>
-          <h3 className="text-sm font-bold text-gray-900 mb-3">Choose Pharmacy</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Choose Pharmacy</h3>
           <div className="flex gap-2 mb-4">
-            <Input type="text" placeholder="Search for pharmacy here" />
-            <input type="text" placeholder="Zip code" value={zipInput} onChange={e => setZipInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleZipSearch()} className="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center" />
+            <Input type="text" placeholder="Search for pharmacy here" className="flex-1" />
+            <input
+              type="text"
+              placeholder="Zip code"
+              value={zipInput}
+              onChange={e => setZipInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleZipSearch()}
+              className="w-24 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
           </div>
-          {isSearching && <p className="text-xs text-gray-400 text-center py-2">Loading pharmacies...</p>}
-          {!isSearching && pharmacies.length > 0 && <p className="text-xs text-gray-400 mb-3">Showing pharmacies near <span className="font-semibold">{activeZip}</span></p>}
-          {!isSearching && noResults && <div className="text-center py-8 text-sm text-gray-400 border border-dashed rounded-xl">No pharmacies found for {activeZip}</div>}
+          {isSearching && <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2">Loading pharmacies...</p>}
+          {!isSearching && pharmacies.length > 0 && <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">Showing pharmacies near <span className="font-semibold">{activeZip}</span></p>}
+          {!isSearching && noResults && <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500 border border-dashed dark:border-gray-700 rounded-xl">No pharmacies found for {activeZip}</div>}
           <div className="space-y-2.5">
             {pharmacies.map(pharmacy => (
-              <PharmacyPickerCard key={pharmacy.id} pharmacy={pharmacy} isSelected={selectedPharmacy?.id === pharmacy.id} onSelect={setSelectedPharmacy} />
+              <PharmacyPickerCard
+                key={pharmacy.id}
+                pharmacy={pharmacy}
+                isSelected={selectedPharmacy?.id === pharmacy.id}
+                onSelect={setSelectedPharmacy}
+              />
             ))}
           </div>
         </div>
       </div>
-      <div className="px-6 pt-4 pb-5 border-t border-gray-100 flex justify-between bg-white mt-auto">
+      <div className="px-6 pt-4 pb-5 border-t border-gray-100 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-900 mt-auto">
         <Button onClick={onBack} disabled={loading} variant="ghost">Cancel</Button>
         <Button onClick={() => onSendRx(selectedPharmacy)} disabled={!selectedPharmacy || loading} variant="solid">
           {loading ? 'Saving...' : (isIsolatedRoute ? 'Update Pharmacy' : 'Send RX')}
@@ -231,6 +246,7 @@ function StepReview({ selectedMed, formData, onBack, onSendRx, initialPharmacy, 
   );
 }
 
+// ─── Main AddRX ──────────────────────────────────────────────────────
 export default function AddRX({
   isOpen,
   onClose,
@@ -325,9 +341,9 @@ export default function AddRX({
       } else {
         await dispatch(addPrescription(payload)).unwrap();
       }
-      
       handleClose();
     } catch {
+      // Error handled by Redux
     }
   };
 
@@ -370,28 +386,34 @@ export default function AddRX({
 
   if (!isOpen) return null;
   if (loadingLists && step === 1) return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white shadow-2xl flex items-center justify-center">
-      <p className="text-gray-500">Loading medications...</p>
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white dark:bg-gray-900 shadow-2xl flex items-center justify-center">
+      <p className="text-gray-500 dark:text-gray-400">Loading medications...</p>
     </div>
   );
 
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={() => !loading && handleClose()} />
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white shadow-2xl flex flex-col">
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white dark:bg-gray-900 shadow-2xl flex flex-col">
         <div className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 pt-5 pb-4 border-b border-gray-100">
+          <div className="px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">{isEditMode ? 'Edit Medication' : 'New Medication'}</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {isEditMode ? 'Edit Medication' : 'New Medication'}
+                </h2>
                 {(!initialData?.isIsolatedRoute && !isEditMode) || step === 2 ? (
                   <>
-                    <p className="text-xs text-gray-400 mt-0.5">{stepSubtitle}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{stepSubtitle}</p>
                     <StepIndicator currentStep={step} />
                   </>
                 ) : null}
               </div>
-              <button onClick={handleClose} disabled={loading} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50">
+              <button
+                onClick={handleClose}
+                disabled={loading}
+                className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-800 hover:text-gray-600 disabled:opacity-50"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>

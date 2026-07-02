@@ -8,22 +8,19 @@ const dummyAppointments = [
 
 export default function DoctorSchedule() {
   return (
-    <div className="p-6 max-w-3xl mx-auto w-full">
-      <h1 className="text-2xl font-bold mb-4">Schedule</h1>
-      <p className="text-sm text-gray-500 mb-4">
-        Placeholder data — real scheduling isn't wired up yet.
-      </p>
+    <div className="p-6 max-w-3xl mx-auto w-full dark:bg-gray-900 min-h-screen">
+      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Schedule</h1>
       <div className="space-y-3">
         {dummyAppointments.map((appt) => (
           <div
             key={appt.id}
-            className="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center transition-colors"
           >
             <div>
-              <p className="font-semibold text-gray-900">{appt.patientName}</p>
-              <p className="text-sm text-gray-500">{appt.date}</p>
+              <p className="font-semibold text-gray-900 dark:text-white">{appt.patientName}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{appt.date}</p>
             </div>
-            <p className="text-sm font-medium text-blue-600">{appt.time}</p>
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{appt.time}</p>
           </div>
         ))}
       </div>

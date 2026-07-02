@@ -35,17 +35,17 @@ export default function PharmacySelectDrawer({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-      <div className="bg-white rounded-xl w-full max-w-md p-6">
-        <h3 className="text-lg font-bold mb-4">Select a Pharmacy</h3>
-        {loading && <p className="text-center py-4">Loading pharmacies...</p>}
+      <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-md p-6">
+        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Select a Pharmacy</h3>
+        {loading && <p className="text-center py-4 text-gray-500 dark:text-gray-400">Loading pharmacies...</p>}
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {pharmacies.map((ph) => (
             <label
               key={ph.id}
               className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer ${
                 selectedId === ph.id
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200"
+                  ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30"
+                  : "border-gray-200 dark:border-gray-700"
               }`}
               onClick={() => setSelectedId(ph.id)}
             >
@@ -57,32 +57,25 @@ export default function PharmacySelectDrawer({
                 className="w-4 h-4"
               />
               <div>
-                <p className="font-medium text-sm">{ph.name}</p>
-                <p className="text-xs text-gray-500">{ph.address}</p>
-                <p className="text-xs text-gray-400">
+                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">{ph.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{ph.address}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   {ph.phone} • {ph.hours}
                 </p>
               </div>
             </label>
           ))}
           {!loading && pharmacies.length === 0 && (
-            <p className="text-gray-500 text-center py-4">
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
               No pharmacies found for zip {zipCode}
             </p>
           )}
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <Button
-            onClick={onClose}
-            variant="ghost"
-          >
+          <Button onClick={onClose} variant="ghost">
             Cancel
           </Button>
-          <Button
-            onClick={handleSelect}
-            disabled={!selectedId}
-            variant="solid"
-          >
+          <Button onClick={handleSelect} disabled={!selectedId} variant="solid">
             Save
           </Button>
         </div>

@@ -54,7 +54,6 @@ export default function Medications({ role, userId, patientId: propPatientId }) 
 
   const handlePharmacyChange = (newPharmacy) => setPharmacyData(newPharmacy);
 
-  // Fetch PDMP and pharmacy data independently
   useEffect(() => {
     if (!effectivePatientId) {
       setPdmpData(null);
@@ -137,26 +136,26 @@ export default function Medications({ role, userId, patientId: propPatientId }) 
   };
 
   if (patientError) {
-    return <div className="p-4 text-red-600">{patientError}</div>;
+    return <div className="p-4 text-red-600 dark:text-red-400">{patientError}</div>;
   }
 
   if (!effectivePatientId) {
     return (
-      <div className="p-8 text-center text-gray-500">
+      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
         No patient selected. Please go back and choose a patient.
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
+    <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <main className="w-full px-4 py-6 md:px-6 lg:px-8">
         {error && (
-          <div className="flex items-center justify-between bg-red-100 text-red-700 p-3 rounded mb-4">
+          <div className="flex items-center justify-between bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded mb-4">
             <span>{error}</span>
             <button
               onClick={() => dispatch(clearError())}
-              className="ml-4 text-red-500 hover:text-red-700 font-bold text-sm"
+              className="ml-4 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-bold text-sm"
               aria-label="Dismiss error"
             >
               Clear ✕
@@ -165,7 +164,7 @@ export default function Medications({ role, userId, patientId: propPatientId }) 
         )}
 
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
             Medications — {patient?.name || "Patient"}
           </h1>
           {role === "doctor" && (
@@ -192,9 +191,9 @@ export default function Medications({ role, userId, patientId: propPatientId }) 
         </div>
 
         <div className="space-y-4">
-          {loading && <div className="text-center py-4">Loading prescriptions...</div>}
+          {loading && <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading prescriptions...</div>}
           {!loading && medications.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               No medications found for this patient.
             </div>
           )}

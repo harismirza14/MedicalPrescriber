@@ -1,30 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { fetchPrescriber } from "../api/prescriberApi";
+import React from "react";
+import usePatient from "../hooks/usePatient";
 import Avatar from "../components/atoms/Avatar/Avatar";
 import ProfileField from "../components/molecules/ProfileField/ProfileField";
 
-export default function DoctorProfile({ prescriberId }) {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default function PatientProfile({ patientId }) {
+  const { patient, loading, error } = usePatient(patientId);
 
-  useEffect(() => {
-    if (!prescriberId) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    fetchPrescriber(prescriberId)
-      .then(setProfile)
-      .catch((err) => {
-        console.error("Failed to fetch profile:", err);
-        setError("Could not load profile.");
-      })
-      .finally(() => setLoading(false));
-  }, [prescriberId]);
-
-  if (!prescriberId) {
+  if (!patientId) {
     return <div className="p-6 text-gray-700 dark:text-gray-300">No profile available.</div>;
   }
 
@@ -37,14 +19,16 @@ export default function DoctorProfile({ prescriberId }) {
           <p className="text-gray-500 dark:text-gray-400 text-center py-8">Loading profile...</p>
         ) : error ? (
           <p className="text-red-600 dark:text-red-400 text-center py-8">{error}</p>
+        ) : !patient ? (
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">No profile data.</p>
         ) : (
           <>
             <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-4">
-                <Avatar name={profile.name} size="lg" />
+                <Avatar name={patient.name} size="lg" />
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">{profile.name}</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{profile.specialty || "Prescriber"}</p>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">{patient.name}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{patient.gender || "N/A"}</p>
                 </div>
               </div>
               <button
@@ -58,12 +42,14 @@ export default function DoctorProfile({ prescriberId }) {
             </div>
 
             <div className="px-6 py-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-              <ProfileField label="Name" value={profile.name} />
-              <ProfileField label="Email" value={profile.email} />
-              <ProfileField label="Phone" value={profile.phone_number} />
-              <ProfileField label="Specialty" value={profile.specialty} />
-              <ProfileField label="PMDC Number" value={profile.pmdc_number} />
-              <ProfileField label="Education" value={profile.education} />
+              <ProfileField label="Name" value={patient.name} />
+              <ProfileField label="Date of Birth" value={patient.dob} />
+              <ProfileField label="Gender" value={patient.gender} />
+              <ProfileField label="Email" value={patient.email} />
+              <ProfileField label="Phone" value={patient.phone_number} />
+              <ProfileField label="Address" value={patient.address} />
+              <ProfileField label="Zip Code" value={patient.zipcode} />
+              <ProfileField label="Insurance" value={patient.insurance} />
             </div>
           </>
         )}
