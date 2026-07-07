@@ -1,11 +1,9 @@
 import '../src/index.css';
 import { setProjectAnnotations } from '@storybook/react';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../src/store/authSlice';
 import medicationsReducer from '../src/store/MedicationSlice';
-
 
 // Mock Redux store
 const mockStore = configureStore({
@@ -27,7 +25,6 @@ const mockStore = configureStore({
   },
 });
 
-/** @type { import('@storybook/react-vite').Preview } */
 const preview = {
   parameters: {
     controls: {
@@ -43,9 +40,7 @@ const preview = {
   decorators: [
     (Story) => (
       <Provider store={mockStore}>
-        <MemoryRouter>
-          <Story />
-        </MemoryRouter>
+        <Story />
       </Provider>
     ),
   ],

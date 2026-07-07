@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import usePatient from "../hooks/usePatient";
 import Avatar from "../components/atoms/Avatar/Avatar";
 import ProfileField from "../components/molecules/ProfileField/ProfileField";
+import AddPatientModal from "../components/organisms/AddPatientModal/AddPatientModal";
+import { Pencil } from "lucide-react";
 
 export default function PatientProfile({ patientId }) {
-  const { patient, loading, error } = usePatient(patientId);
+  const { patient, loading, error, refetch } = usePatient(patientId);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   if (!patientId) {
     return <div className="p-6 text-gray-700 dark:text-gray-300">No profile available.</div>;
@@ -33,10 +36,10 @@ export default function PatientProfile({ patientId }) {
               </div>
               <button
                 type="button"
-                onClick={() => {}}
-                className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
-                title="Coming soon"
+                onClick={() => setIsEditOpen(true)}
+                className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-shrink-0 flex items-center gap-1.5"
               >
+                <Pencil className="w-3.5 h-3.5" />
                 Edit Profile
               </button>
             </div>
@@ -54,6 +57,13 @@ export default function PatientProfile({ patientId }) {
           </>
         )}
       </div>
+
+      <AddPatientModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        initialData={patient ? { ...patient, patient_id: patientId } : null}
+        onPatientAdded={refetch}
+      />
     </div>
   );
 }

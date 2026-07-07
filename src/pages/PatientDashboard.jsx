@@ -48,7 +48,7 @@ export default function PatientDashboard({ patientId, role, userId }) {
   const [removeMemberLoading, setRemoveMemberLoading] = useState(false);
 
   if (!patientId) {
-    return <div className="p-6 text-gray-700 dark:text-gray-300">No patient selected.</div>;
+    return <div className="text-gray-700 dark:text-gray-300">No patient selected.</div>;
   }
 
   const handleDeletePatient = async () => {
@@ -212,7 +212,7 @@ export default function PatientDashboard({ patientId, role, userId }) {
   };
 
   return (
-    <div className="p-6">
+    <>
       <main className="min-w-0">{renderContent()}</main>
 
       <AddPatientModal
@@ -254,6 +254,6 @@ export default function PatientDashboard({ patientId, role, userId }) {
           setRemoveMemberError(null);
         }}
       />
-    </div>
+    </>
   );
 }

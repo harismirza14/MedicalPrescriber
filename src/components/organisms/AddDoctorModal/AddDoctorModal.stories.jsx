@@ -1,10 +1,18 @@
 import { waitFor, expect, fn } from 'storybook/test';
 import AddDoctorModal from './AddDoctorModal';
 import client from '../../../api/client';
+import { ThemeProvider } from '@/context/Theme';   // 👈 import ThemeProvider
 
 export default {
   title: 'Organisms/AddDoctorModal',
   component: AddDoctorModal,
+  decorators: [
+    (Story) => (
+      <ThemeProvider>    {/* 👈 wrap every story */}
+        <Story />
+      </ThemeProvider>
+    ),
+  ],
   args: {
     onClose: () => {},
     onDoctorAdded: () => {},
@@ -19,6 +27,7 @@ export const Closed = {
   args: { isOpen: false },
 };
 
+// ---- helper for filling fields ----
 function fillRequiredFields(canvasElement) {
   const set = (name, value) => {
     const input = canvasElement.querySelector(`input[name="${name}"]`);
@@ -30,12 +39,13 @@ function fillRequiredFields(canvasElement) {
   set('phone_number', '0300-1234567');
 }
 
+// ---- stories with interactions ----
 export const LoadingState = {
   args: { isOpen: true },
   play: async ({ canvasElement }) => {
     const originalPost = client.post;
     try {
-      client.post = () => new Promise(() => {}); 
+      client.post = () => new Promise(() => {}); // never resolves
       fillRequiredFields(canvasElement);
       canvasElement.querySelector('button[type="submit"]').click();
 
@@ -56,7 +66,7 @@ export const SuccessState = {
   },
   play: async ({ canvasElement, args }) => {
     const originalPost = client.post;
-    const onDoctorAddedMock = args.onDoctorAdded; 
+    const onDoctorAddedMock = args.onDoctorAdded;
 
     try {
       client.post = async () => ({ data: {} });

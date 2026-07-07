@@ -3,9 +3,11 @@ import {
   createBrowserRouter,
   Navigate,
   useSearchParams,
+  useParams,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
-import DashboardLayout from "./components/templates/DashboardLayout/DashboardLayout";
+import DoctorDetail from "./pages/DoctorDetail";
+import AppLayout from "./components/templates/AppLayout/AppLayout";
 import LoginPage from "./pages/Login";
 import Medications from "./pages/Medications";
 import PatientSelector from "./pages/PatientSelector";
@@ -51,12 +53,6 @@ function PatientSelectorWrapper() {
   return <PatientSelector doctorId={doctorId} />;
 }
 
-function PatientProfileWrapper() {
-  const { role, user } = useSelector((state) => state.auth);
-  const patientId = role === "patient" ? user?.roleSpecificId : null;
-  return <PatientProfile patientId={patientId} />;
-}
-
 function PatientDashboardWrapper() {
   const { role, user } = useSelector((state) => state.auth);
   const userId = user?.roleSpecificId;
@@ -82,56 +78,68 @@ function ProfileWrapper() {
   return <DoctorProfile prescriberId={prescriberId} />;
 }
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: "/",
-      element: <HomeRedirect />,
-    },
-    {
-      path: "/login",
-      element: <LoginRouteWrapper />,
-    },
-    {
-      element: <DashboardLayout />,
-      children: [
-        {
-          path: "/medications",
-          element: <MedicationsWrapper />,
-        },
-        {
-          path: "/select-patient",
-          element: <PatientSelectorWrapper />,
-        },
-        {
-          path: "/patient-dashboard",
-          element: <PatientDashboardWrapper />,
-        },
-        {
-          path: "/admin",
-          element: <AdminDashboard />,
-        },
-        {
-          path: "/care-team",
-          element: <CareTeamWrapper />,
-        },
-        {
-          path: "/profile",
-          element: <ProfileWrapper />,
-        },
-        {
-          path: "/schedule",
-          element: <DoctorSchedule />,
-        },
-        {
-          path: "/my-profile",
-          element: <PatientProfileWrapper />,
-        },
-      ],
-    },
-    {
-      path: "*",
-      element: <Navigate to="/" replace />,
-    },
-  ]
-);
+function PatientProfileWrapper() {
+  const { role, user } = useSelector((state) => state.auth);
+  const patientId = role === "patient" ? user?.roleSpecificId : null;
+  return <PatientProfile patientId={patientId} />;
+}
+function DoctorDetailWrapper() {
+  const { prescriberId } = useParams();
+  return <DoctorDetail prescriberId={prescriberId} />;
+}
+
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomeRedirect />,
+  },
+  {
+    path: "/login",
+    element: <LoginRouteWrapper />,
+  },
+  {
+    element: <AppLayout />,
+    children: [
+      {
+        path: "/medications",
+        element: <MedicationsWrapper />,
+      },
+      {
+        path: "/select-patient",
+        element: <PatientSelectorWrapper />,
+      },
+      {
+        path: "/patient-dashboard",
+        element: <PatientDashboardWrapper />,
+      },
+      {
+        path: "/admin",
+        element: <AdminDashboard />,
+      },
+      {
+        path: "/admin/doctor/:prescriberId",
+        element: <DoctorDetailWrapper />,
+      },
+      {
+        path: "/care-team",
+        element: <CareTeamWrapper />,
+      },
+      {
+        path: "/profile",
+        element: <ProfileWrapper />,
+      },
+      {
+        path: "/schedule",
+        element: <DoctorSchedule />,
+      },
+      {
+        path: "/my-profile",
+        element: <PatientProfileWrapper />,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
+]);

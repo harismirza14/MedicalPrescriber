@@ -1,56 +1,54 @@
-import React, { useState, useEffect, useCallback } from "react";
-import AddDoctorModal from "../components/organisms/AddDoctorModal/AddDoctorModal";
-import ConfirmationModal from "../components/molecules/ConfirmationModal/ConfirmationModal";
-import { Table } from "../components/molecules/Table";
-import { fetchPrescribers, deletePrescriber } from "../api/prescriberApi";
+import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { usePaginatedData } from "@/hooks/usePaginationData";
+import { fetchPrescribers, deletePrescriber } from "@/api/prescriberApi";
+import { Table } from "@/components/molecules/Table";
+import AddDoctorModal from "@/components/organisms/AddDoctorModal/AddDoctorModal";
+import ConfirmationModal from "@/components/molecules/ConfirmationModal/ConfirmationModal";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
-const LIMIT = 10;
+const LIMIT = 5;
 
 export default function AdminDashboard() {
-  const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState(null);
   const [deletingDoctor, setDeletingDoctor] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [genderFilter, setGenderFilter] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  // ─── Memoize the fetch function ──────────────────────────────────
+  const fetchFn = useCallback(
+    (params) =>
+      fetchPrescribers({
+        search: params.search,
+        gender: params.filter,
+        page: params.page,
+        limit: params.limit,
+      }),
+    [] // fetchPrescribers is stable; no dependencies
+  );
 
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(handler);
-  }, [search]);
+  // ─── Use the reusable pagination hook ──────────────────────────────
+  const {
+    data: doctors,
+    loading,
+    error,
+    search,
+    setSearch,
+    filter: genderFilter,
+    setFilter: setGenderFilter,
+    page,
+    setPage,
+    totalPages,
+    refetch,
+  } = usePaginatedData({
+    fetchFn,
+    initialFilter: "",
+    limit: LIMIT,
+  });
 
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, genderFilter]);
-
-  const fetchDoctors = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    fetchPrescribers({ search: debouncedSearch, gender: genderFilter, page, limit: LIMIT })
-      .then((res) => {
-        setDoctors(res.data || []);
-        setTotalPages(res.totalPages || 1);
-      })
-      .catch((err) => {
-        console.error("Failed to load doctors:", err);
-        setError("Failed to load doctors.");
-      })
-      .finally(() => setLoading(false));
-  }, [debouncedSearch, genderFilter, page]);
-
-  useEffect(() => {
-    fetchDoctors();
-  }, [fetchDoctors]);
-
+  // ─── Delete handler ────────────────────────────────────────────────
   const handleDelete = async () => {
     if (!deletingDoctor) return;
     setDeleteLoading(true);
@@ -58,7 +56,7 @@ export default function AdminDashboard() {
     try {
       await deletePrescriber(deletingDoctor.prescriber_id);
       setDeletingDoctor(null);
-      fetchDoctors();
+      refetch();
     } catch (err) {
       setDeleteError(err.response?.data?.error || "Failed to delete doctor.");
     } finally {
@@ -66,8 +64,8 @@ export default function AdminDashboard() {
     }
   };
 
+  // ─── Table columns ──────────────────────────────────────────────────
   const columns = [
-    { key: "prescriber_id", label: "ID" },
     { key: "name", label: "Name" },
     { key: "email", label: "Email" },
     { key: "phone_number", label: "Phone" },
@@ -86,8 +84,7 @@ export default function AdminDashboard() {
               setEditingDoctor(row);
               setShowModal(true);
             }}
-            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400"
-            title="Edit doctor"
+            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-blue-600"
           >
             <Pencil className="w-4 h-4" />
           </button>
@@ -95,11 +92,10 @@ export default function AdminDashboard() {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              setDeleteError(null);
               setDeletingDoctor(row);
+              setDeleteError(null);
             }}
-            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400"
-            title="Delete doctor"
+            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-red-600"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -121,10 +117,13 @@ export default function AdminDashboard() {
     },
   ];
 
+  // ─── Render ──────────────────────────────────────────────────────────
   return (
-    <div className="p-6 max-w-6xl mx-auto w-full">
+    <div className="w-full">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Doctor Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Doctor Management
+        </h1>
         <button
           onClick={() => {
             setEditingDoctor(null);
@@ -138,7 +137,7 @@ export default function AdminDashboard() {
       </div>
 
       {error ? (
-        <p className="text-red-600 dark:text-red-400 text-center py-8">{error}</p>
+        <p className="text-red-600 text-center py-8">{error}</p>
       ) : (
         <Table
           data={doctors}
@@ -148,10 +147,10 @@ export default function AdminDashboard() {
           searchPlaceholder="Search by name or email..."
           filters={filters}
           loading={loading}
-          onRowClick={(row) => console.log("Doctor row clicked:", row.prescriber_id)}
+          onRowClick={(row) => navigate(`/admin/doctor/${row.prescriber_id}`)}
           currentPage={page}
           totalPages={totalPages}
-          onPageChange={totalPages > 1 ? setPage : undefined}
+          onPageChange={setPage}
         />
       )}
 
@@ -161,7 +160,7 @@ export default function AdminDashboard() {
           setShowModal(false);
           setEditingDoctor(null);
         }}
-        onDoctorAdded={fetchDoctors}
+        onDoctorAdded={refetch}
         initialData={editingDoctor}
       />
 

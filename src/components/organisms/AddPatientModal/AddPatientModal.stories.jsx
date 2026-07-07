@@ -1,10 +1,21 @@
 import { waitFor } from 'storybook/test';
+import { MemoryRouter } from 'react-router-dom';
+import { ThemeProvider } from '@/context/Theme';
 import AddPatientModal from './AddPatientModal';
 import client from '../../../api/client';
 
 export default {
   title: 'Organisms/AddPatientModal',
   component: AddPatientModal,
+  decorators: [
+    (Story) => (
+      <ThemeProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <Story />
+        </MemoryRouter>
+      </ThemeProvider>
+    ),
+  ],
 };
 
 export const Open = {

@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { fetchPrescriber } from "../api/prescriberApi";
 import Avatar from "../components/atoms/Avatar/Avatar";
 import ProfileField from "../components/molecules/ProfileField/ProfileField";
+import AddDoctorModal from "../components/organisms/AddDoctorModal/AddDoctorModal";
+import { Pencil } from "lucide-react";
 
 export default function DoctorProfile({ prescriberId }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
-  useEffect(() => {
+  const loadProfile = useCallback(() => {
     if (!prescriberId) {
       setLoading(false);
       return;
@@ -23,6 +26,10 @@ export default function DoctorProfile({ prescriberId }) {
       })
       .finally(() => setLoading(false));
   }, [prescriberId]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   if (!prescriberId) {
     return <div className="p-6 text-gray-700 dark:text-gray-300">No profile available.</div>;
@@ -49,10 +56,10 @@ export default function DoctorProfile({ prescriberId }) {
               </div>
               <button
                 type="button"
-                onClick={() => {}}
-                className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
-                title="Coming soon"
+                onClick={() => setIsEditOpen(true)}
+                className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-shrink-0 flex items-center gap-1.5"
               >
+                <Pencil className="w-3.5 h-3.5" />
                 Edit Profile
               </button>
             </div>
@@ -68,6 +75,13 @@ export default function DoctorProfile({ prescriberId }) {
           </>
         )}
       </div>
+
+      <AddDoctorModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        initialData={profile ? { ...profile, prescriber_id: prescriberId } : null}
+        onDoctorAdded={loadProfile}
+      />
     </div>
   );
 }
