@@ -1,11 +1,11 @@
 import React from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Bell, Sun, Moon, ArrowLeft, Pill } from "lucide-react";
 import { useTheme } from "@/context/Theme";
 
 const pageConfig = {
   '/select-patient': { title: 'Select a Patient', showBack: false },
-  '/patient-dashboard': { title: 'Patient Dashboard', showBack: true, backTo: '/select-patient' },
   '/medications': { title: 'Medications', showBack: false },
   '/admin': { title: 'Admin Dashboard', showBack: false },
   '/profile': { title: 'My Profile', showBack: true, backTo: '/select-patient' },
@@ -24,12 +24,20 @@ export default function Header() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { theme, toggleTheme } = useTheme();
+  const { role } = useSelector((state) => state.auth);
 
-  // /admin/doctor/:prescriberId isn't a fixed path, so it can't live in pageConfig's
-  // exact-match lookup — handle it explicitly before falling back to the static map.
-  const config = location.pathname.startsWith('/admin/doctor/')
-    ? { title: 'Doctor Profile', showBack: true, backTo: '/admin' }
-    : pageConfig[location.pathname] || { title: '', showBack: false };
+  let config;
+  if (location.pathname.startsWith('/admin/doctor/')) {
+    config = { title: 'Doctor Profile', showBack: true, backTo: '/admin' };
+  } else if (location.pathname === '/patient-dashboard') {
+    config = {
+      title: 'Patient Dashboard',
+      showBack: true,
+      backTo: role === 'admin' ? '/admin' : '/select-patient',
+    };
+  } else {
+    config = pageConfig[location.pathname] || { title: '', showBack: false };
+  }
 
   let title = config.title;
   if (location.pathname === '/patient-dashboard') {

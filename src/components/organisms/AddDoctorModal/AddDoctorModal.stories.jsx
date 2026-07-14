@@ -1,7 +1,7 @@
 import { waitFor, expect, fn } from 'storybook/test';
 import AddDoctorModal from './AddDoctorModal';
 import client from '../../../api/client';
-import { ThemeProvider } from '@/context/Theme';   // 👈 import ThemeProvider
+import { ThemeProvider } from '@/context/Theme';  
 
 export default {
   title: 'Organisms/AddDoctorModal',

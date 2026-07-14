@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom"; // ← added useSearchParams
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchPrescriber } from "../api/prescriberApi";
 import { deletePrescriber } from "../api/prescriberApi";
 import useDoctorPatients from "../hooks/useDoctorPatients";
@@ -25,7 +25,7 @@ const calculateAge = (dob) => {
 export default function DoctorDetail({ prescriberId }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "profile"; // read from URL
+  const activeTab = searchParams.get("tab") || "profile";
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +84,11 @@ export default function DoctorDetail({ prescriberId }) {
     { key: "gender", label: "Gender" },
     { key: "insurance", label: "Insurance" },
   ];
+
+  // ─── Handle patient row click ──────────────────────────────────────
+  const handlePatientClick = (patient) => {
+    navigate(`/patient-dashboard?patientId=${patient.patient_id}&tab=profile`);
+  };
 
   return (
     <div className="w-full max-w-4xl">
@@ -154,6 +159,7 @@ export default function DoctorDetail({ prescriberId }) {
           currentPage={page}
           totalPages={totalPages}
           onPageChange={totalPages > 1 ? setPage : undefined}
+          onRowClick={handlePatientClick}   // 👈 Click patient → navigate to dashboard
         />
       )}
 

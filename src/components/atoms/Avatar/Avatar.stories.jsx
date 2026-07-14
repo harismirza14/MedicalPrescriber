@@ -7,7 +7,7 @@ export default {
 };
 
 export const WithInitials = {
-  args: { name: "Muhammad Haris", size: "md", color: "blue" },
+  args:{ name: "Muhammad Haris", size: "md", color: "blue" },
 };
 
 export const LargeBlue = {

@@ -38,14 +38,15 @@ export default function LeftSidebar() {
     navItems = [
       { label: "Medications", path: "/medications", icon: Pill },
       { label: "Care Team", path: "/care-team", icon: Users },
+      { label: "Appointments", path: "/appointments", icon: Calendar },
     ];
   } else if (role === "admin") {
     navItems = [{ label: "Dashboard", path: "/admin", icon: Shield }];
   } else if (role === "doctor") {
-    // Always show the same items: Patients and Schedule (no patient-specific tabs)
     navItems = [
       { label: "Patients", path: "/select-patient", icon: Users },
       { label: "Schedule", path: "/schedule", icon: Calendar },
+       { label: "Appointments", path: "/appointments", icon: Calendar },
     ];
   }
 

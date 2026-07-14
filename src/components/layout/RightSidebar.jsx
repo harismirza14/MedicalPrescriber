@@ -5,7 +5,7 @@ import usePatient from "@/hooks/usePatient";
 import { fetchPrescriber } from "@/api/prescriberApi";
 import { useState, useEffect } from "react";
 import Avatar from "@/components/atoms/Avatar/Avatar";
-import { User, Pill, Users, UserCog, UsersRound } from "lucide-react"; 
+import { User, Pill, Users, UserCog, UsersRound } from "lucide-react";
 import { shouldShowRightSidebar } from "@/utils/sidebarUtils";
 
 export default function RightSidebar() {
@@ -14,12 +14,16 @@ export default function RightSidebar() {
   const { prescriberId } = useParams();
   const { role } = useSelector((state) => state.auth);
   const patientId = searchParams.get("patientId");
-  const currentTab = searchParams.get("tab"); 
+  const currentTab = searchParams.get("tab");
 
   const visible = shouldShowRightSidebar(location.pathname, role);
   const isAdminDoctorView = role === "admin" && location.pathname.startsWith("/admin/doctor/");
 
-  const { patient } = usePatient(visible && role === "doctor" ? patientId : null);
+  // Doctor OR admin viewing a specific patient (but not the admin-viewing-doctor case,
+  // which fetches prescriber data instead, below).
+  const { patient } = usePatient(
+    visible && (role === "doctor" || role === "admin") && !isAdminDoctorView ? patientId : null
+  );
 
   const [doctorProfile, setDoctorProfile] = useState(null);
   useEffect(() => {
@@ -83,7 +87,7 @@ export default function RightSidebar() {
     );
   }
 
-  // ─── Doctor viewing a patient (existing) ──────────────────────
+  // ─── Doctor or admin viewing a patient ──────────────────────────
   return (
     <aside className="fixed right-0 top-16 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto z-20 p-4 transition-colors duration-200">
       <div className="flex items-center gap-3 mb-4">

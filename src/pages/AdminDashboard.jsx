@@ -26,7 +26,7 @@ export default function AdminDashboard() {
         page: params.page,
         limit: params.limit,
       }),
-    [] // fetchPrescribers is stable; no dependencies
+    [] 
   );
 
   // ─── Use the reusable pagination hook ──────────────────────────────
@@ -72,36 +72,6 @@ export default function AdminDashboard() {
     { key: "specialty", label: "Specialty" },
     { key: "pmdc_number", label: "PMDC" },
     { key: "education", label: "Education" },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (_, row) => (
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingDoctor(row);
-              setShowModal(true);
-            }}
-            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-blue-600"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeletingDoctor(row);
-              setDeleteError(null);
-            }}
-            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-red-600"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      ),
-    },
   ];
 
   const filters = [

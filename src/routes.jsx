@@ -17,6 +17,7 @@ import DoctorProfile from "./pages/DoctorProfile";
 import DoctorSchedule from "./pages/DoctorSchedule";
 import PatientDashboard from "./pages/PatientDashboard";
 import PatientProfile from "./pages/PatientProfile";
+import Appointments from "./pages/Appointments";
 
 function HomeRedirect() {
   const { role } = useSelector((state) => state.auth);
@@ -37,6 +38,11 @@ function LoginRouteWrapper() {
   return <LoginPage />;
 }
 
+function ScheduleWrapper() {
+  const { user } = useSelector((state) => state.auth);
+  return <DoctorSchedule prescriberId={user?.roleSpecificId} />;
+}
+
 function MedicationsWrapper() {
   const { role, user } = useSelector((state) => state.auth);
   const userId = user?.roleSpecificId;
@@ -53,13 +59,15 @@ function PatientSelectorWrapper() {
   return <PatientSelector doctorId={doctorId} />;
 }
 
+// ✅ FIXED: Allow admin to view patient dashboard
 function PatientDashboardWrapper() {
   const { role, user } = useSelector((state) => state.auth);
   const userId = user?.roleSpecificId;
   const [searchParams] = useSearchParams();
   const patientId = searchParams.get("patientId");
 
-  if (role !== "doctor") {
+  // Allow both doctor and admin
+  if (role !== "doctor" && role !== "admin") {
     return <Navigate to="/" replace />;
   }
 
@@ -83,9 +91,15 @@ function PatientProfileWrapper() {
   const patientId = role === "patient" ? user?.roleSpecificId : null;
   return <PatientProfile patientId={patientId} />;
 }
+
 function DoctorDetailWrapper() {
   const { prescriberId } = useParams();
   return <DoctorDetail prescriberId={prescriberId} />;
+}
+
+function AppointmentsWrapper() {
+  const { role, user } = useSelector((state) => state.auth);
+  return <Appointments role={role} id={user?.roleSpecificId} />;
 }
 
 export const router = createBrowserRouter([
@@ -130,11 +144,15 @@ export const router = createBrowserRouter([
       },
       {
         path: "/schedule",
-        element: <DoctorSchedule />,
+        element: <ScheduleWrapper />,
       },
       {
         path: "/my-profile",
         element: <PatientProfileWrapper />,
+      },
+      {
+        path: "/appointments",
+        element: <AppointmentsWrapper />,
       },
     ],
   },
