@@ -2,6 +2,7 @@ import axios from "axios";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || 'http://localhost:3000/api',
+  withCredentials: true,
 });
 
 client.interceptors.request.use((config) => {
@@ -13,8 +14,7 @@ client.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${parsed.token}`;
       }
     }
-  } catch {
-  }
+  } catch {}
   return config;
 });
 
@@ -22,11 +22,13 @@ client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      const { status } = error.response;
-
-      if (status === 401) {
+      const { status, config } = error.response;
+      const isLoginRequest = config?.url?.includes("/login");
+      if (status === 401 && !isLoginRequest) {
         localStorage.removeItem("auth");
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       } else if (status === 403) {
         console.error("[API] 403 Forbidden");
       } else if (status >= 500) {

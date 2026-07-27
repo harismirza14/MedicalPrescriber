@@ -13,10 +13,17 @@ const dirname =
 
 export default defineConfig({
   plugins: [react()],
-  // ✅ Add this resolve alias block
   resolve: {
     alias: {
       '@': path.resolve(dirname, './src'),
+    },
+  },
+  server: {
+    proxy: {
+      '/uploads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
   },
   test: {

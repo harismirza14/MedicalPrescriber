@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { fetchPrescribers } from "../../../api/prescriberApi";
 import { addCareTeamMember } from "../../../api/careTeamApi";
-
+import Button from "../../atoms/Button/Button"; 
 const ROLE_OPTIONS = ["Primary Physician", "Consultant", "Specialist", "Nurse"];
-const LIMIT = 3;
+const LIMIT = 2;
 
 const inputCls =
   "w-full border rounded px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-blue-500";
@@ -20,15 +20,16 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const isSubmittingRef = useRef(false);
-  const loadMoreRef = useRef(null);
 
   const hasMore = results.length < totalCount;
 
+  // Debounce search
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(handler);
   }, [search]);
 
+  // Reset pagination on new search
   useEffect(() => {
     if (debouncedSearch.trim()) {
       setPage(1);
@@ -37,6 +38,7 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
     }
   }, [debouncedSearch]);
 
+  // Fetch results
   useEffect(() => {
     if (!isOpen || !debouncedSearch.trim()) {
       setResults([]);
@@ -49,7 +51,6 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
       .then((res) => {
         const data = res.data || [];
         const total = res.total ?? res.totalCount ?? res.totalItems ?? 0;
-
         setResults((prev) => (page === 1 ? data : [...prev, ...data]));
         setTotalCount(total);
       })
@@ -58,24 +59,9 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
         setTotalCount(0);
       })
       .finally(() => setSearching(false));
-  }, [debouncedSearch, isOpen, page], 1000);
+  }, [debouncedSearch, isOpen, page]);
 
-  useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || searching) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !searching) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px 100px 0px" }
-    );
-
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, searching]);
-
+  // Reset modal on open
   useEffect(() => {
     if (isOpen) {
       setSearch("");
@@ -88,6 +74,12 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
       setTotalCount(0);
     }
   }, [isOpen]);
+
+  const handleLoadMore = () => {
+    if (hasMore && !searching) {
+      setPage((prev) => prev + 1);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -184,16 +176,21 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
                         </li>
                       ))}
 
-                    
+                     
                       {hasMore && (
-                        <li
-                          ref={loadMoreRef}
-                          className="px-3 py-2 text-center text-xs text-gray-400 dark:text-gray-500 list-none"
-                        >
-                          Loading more...
+                        <li className="px-3 py-2 list-none">
+                          <Button
+                            variant="ghost"
+                            className="w-full text-xs font-medium"
+                            onClick={handleLoadMore}
+                            disabled={searching}
+                          >
+                            {searching ? "Loading..." : "Load More"}
+                          </Button>
                         </li>
                       )}
 
+                      {/* ─── Summary when all loaded ──────────────────── */}
                       {!hasMore && results.length > 0 && (
                         <li className="px-3 py-2 text-center text-xs text-gray-400 dark:text-gray-500 list-none">
                           {results.length} of {totalCount}{" "}
@@ -229,21 +226,10 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
         </div>
 
         <div className="border-t border-gray-200 dark:border-gray-700 p-6 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            form="add-care-team-form"
-            disabled={loading || !selectedPrescriber}
-            className="px-4 py-2 text-sm rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-          >
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="solid" disabled={loading || !selectedPrescriber} type="submit" form="add-care-team-form">
             {loading ? "Adding..." : "Add Member"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

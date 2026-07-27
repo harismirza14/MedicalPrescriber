@@ -56,7 +56,11 @@ export default function DoctorDetail({ prescriberId }) {
     loadProfile();
   }, [loadProfile]);
 
-  const { patients, loading: patientsLoading, totalPages } = useDoctorPatients(prescriberId, {
+  const {
+    patients,
+    loading: patientsLoading,
+    totalPages,
+  } = useDoctorPatients(prescriberId, {
     page,
     limit: LIMIT,
   });
@@ -74,7 +78,11 @@ export default function DoctorDetail({ prescriberId }) {
   };
 
   if (!prescriberId) {
-    return <div className="text-gray-700 dark:text-gray-300">No doctor selected.</div>;
+    return (
+      <div className="text-gray-700 dark:text-gray-300">
+        No doctor selected.
+      </div>
+    );
   }
 
   const patientColumns = [
@@ -85,9 +93,10 @@ export default function DoctorDetail({ prescriberId }) {
     { key: "insurance", label: "Insurance" },
   ];
 
-  // ─── Handle patient row click ──────────────────────────────────────
   const handlePatientClick = (patient) => {
-    navigate(`/patient-dashboard?patientId=${patient.patient_id}&tab=profile`);
+    navigate(
+      `/patient-dashboard?patientId=${patient.patient_id}&tab=profile&doctorId=${prescriberId}`,
+    );
   };
 
   return (
@@ -97,17 +106,29 @@ export default function DoctorDetail({ prescriberId }) {
         <div className="space-y-4">
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
             {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">Loading profile...</p>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                Loading profile...
+              </p>
             ) : error ? (
-              <p className="text-red-600 dark:text-red-400 text-center py-8">{error}</p>
+              <p className="text-red-600 dark:text-red-400 text-center py-8">
+                {error}
+              </p>
             ) : (
               <>
                 <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
                   <div className="flex items-center gap-4">
-                    <Avatar name={profile.name} size="lg" />
+                    <Avatar
+                      name={profile.name}
+                      src={profile?.profile_picture}
+                      size="lg"
+                    />
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">{profile.name}</h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{profile.specialty || "Prescriber"}</p>
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                        {profile.name}
+                      </h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {profile.specialty || "Prescriber"}
+                      </p>
                     </div>
                   </div>
                   <button
@@ -125,7 +146,10 @@ export default function DoctorDetail({ prescriberId }) {
                   <ProfileField label="Email" value={profile.email} />
                   <ProfileField label="Phone" value={profile.phone_number} />
                   <ProfileField label="Specialty" value={profile.specialty} />
-                  <ProfileField label="PMDC Number" value={profile.pmdc_number} />
+                  <ProfileField
+                    label="PMDC Number"
+                    value={profile.pmdc_number}
+                  />
                   <ProfileField label="Education" value={profile.education} />
                 </div>
               </>
@@ -135,8 +159,12 @@ export default function DoctorDetail({ prescriberId }) {
           {profile && (
             <div className="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/50 rounded-lg p-4 flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-red-700 dark:text-red-400">Danger Zone</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Permanently delete this doctor's account.</p>
+                <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+                  Danger Zone
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Permanently delete this doctor's account.
+                </p>
               </div>
               <button
                 type="button"
@@ -159,14 +187,16 @@ export default function DoctorDetail({ prescriberId }) {
           currentPage={page}
           totalPages={totalPages}
           onPageChange={totalPages > 1 ? setPage : undefined}
-          onRowClick={handlePatientClick}   // 👈 Click patient → navigate to dashboard
+          onRowClick={handlePatientClick}
         />
       )}
 
       <AddDoctorModal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        initialData={profile ? { ...profile, prescriber_id: prescriberId } : null}
+        initialData={
+          profile ? { ...profile, prescriber_id: prescriberId } : null
+        }
         onDoctorAdded={loadProfile}
       />
 

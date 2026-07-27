@@ -1,9 +1,14 @@
 import React from "react";
-import { NavLink, useLocation, useParams, useSearchParams } from "react-router-dom";
+import {
+  NavLink,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useSelector } from "react-redux";
 import usePatient from "@/hooks/usePatient";
 import { fetchPrescriber } from "@/api/prescriberApi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import { User, Pill, Users, UserCog, UsersRound } from "lucide-react";
 import { shouldShowRightSidebar } from "@/utils/sidebarUtils";
@@ -17,21 +22,55 @@ export default function RightSidebar() {
   const currentTab = searchParams.get("tab");
 
   const visible = shouldShowRightSidebar(location.pathname, role);
-  const isAdminDoctorView = role === "admin" && location.pathname.startsWith("/admin/doctor/");
+  const isAdminDoctorView =
+    role === "admin" && location.pathname.startsWith("/admin/doctor/");
 
-  // Doctor OR admin viewing a specific patient (but not the admin-viewing-doctor case,
-  // which fetches prescriber data instead, below).
-  const { patient } = usePatient(
-    visible && (role === "doctor" || role === "admin") && !isAdminDoctorView ? patientId : null
+  // ─── Patient data ──────────────────────────────────────────────
+  const { patient, refetch: refetchPatient } = usePatient(
+    visible && (role === "doctor" || role === "admin") && !isAdminDoctorView
+      ? patientId
+      : null,
   );
 
+  // ─── Doctor profile (admin view) ──────────────────────────────
   const [doctorProfile, setDoctorProfile] = useState(null);
-  useEffect(() => {
+  const [doctorProfileLoading, setDoctorProfileLoading] = useState(false);
+
+  const fetchDoctorProfile = useCallback(() => {
     if (isAdminDoctorView && prescriberId) {
-      fetchPrescriber(prescriberId).then(setDoctorProfile).catch(() => setDoctorProfile(null));
+      setDoctorProfileLoading(true);
+      fetchPrescriber(prescriberId)
+        .then(setDoctorProfile)
+        .catch(() => setDoctorProfile(null))
+        .finally(() => setDoctorProfileLoading(false));
     }
   }, [isAdminDoctorView, prescriberId]);
 
+  useEffect(() => {
+    fetchDoctorProfile();
+  }, [fetchDoctorProfile]);
+
+  useEffect(() => {
+    const handleProfilePictureUpdate = (e) => {
+      const { roleSpecificId } = e.detail;
+      if (patientId && String(roleSpecificId) === String(patientId)) {
+        refetchPatient();
+      }
+      if (prescriberId && String(roleSpecificId) === String(prescriberId)) {
+        fetchDoctorProfile();
+      }
+    };
+
+    window.addEventListener(
+      "profile-picture-updated",
+      handleProfilePictureUpdate,
+    );
+    return () =>
+      window.removeEventListener(
+        "profile-picture-updated",
+        handleProfilePictureUpdate,
+      );
+  }, [patientId, prescriberId, refetchPatient, fetchDoctorProfile]);
   if (!visible) return null;
 
   const calculateAge = (dob) => {
@@ -49,7 +88,12 @@ export default function RightSidebar() {
     return (
       <aside className="fixed right-0 top-16 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto z-20 p-4 transition-colors duration-200">
         <div className="flex items-center gap-3 mb-4">
-          <Avatar name={doctorProfile?.name} size="md" color="blue" />
+          <Avatar
+            name={doctorProfile?.name}
+            src={doctorProfile?.profile_picture}
+            size="md"
+            color="blue"
+          />
           <div className="min-w-0">
             <p className="font-semibold text-gray-900 dark:text-white truncate">
               {doctorProfile?.name || "Loading..."}
@@ -60,7 +104,9 @@ export default function RightSidebar() {
           </div>
         </div>
 
-        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-2">Quick links</p>
+        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-2">
+          Quick links
+        </p>
         <div className="space-y-1">
           <NavLink
             to={`/admin/doctor/${prescriberId}?tab=profile`}
@@ -91,7 +137,7 @@ export default function RightSidebar() {
   return (
     <aside className="fixed right-0 top-16 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto z-20 p-4 transition-colors duration-200">
       <div className="flex items-center gap-3 mb-4">
-        <Avatar name={patient?.name} size="md" />
+        <Avatar name={patient?.name} src={patient?.profile_picture} size="md" />
         <div className="min-w-0">
           <p className="font-semibold text-gray-900 dark:text-white truncate">
             {patient?.name || "Loading..."}
@@ -102,7 +148,9 @@ export default function RightSidebar() {
         </div>
       </div>
 
-      <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-2">Quick links</p>
+      <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-2">
+        Quick links
+      </p>
       <div className="space-y-1">
         <NavLink
           to={`/patient-dashboard?patientId=${patientId}&tab=profile`}

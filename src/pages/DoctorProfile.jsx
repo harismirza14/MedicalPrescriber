@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchPrescriber } from "../api/prescriberApi";
-import Avatar from "../components/atoms/Avatar/Avatar";
 import ProfileField from "../components/molecules/ProfileField/ProfileField";
 import AddDoctorModal from "../components/organisms/AddDoctorModal/AddDoctorModal";
+import Avatar from "../components/atoms/Avatar/Avatar";
 import { Pencil } from "lucide-react";
 
 export default function DoctorProfile({ prescriberId }) {
@@ -48,10 +48,14 @@ export default function DoctorProfile({ prescriberId }) {
           <>
             <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-4">
-                <Avatar name={profile.name} size="lg" />
+                <Avatar
+                  name={profile?.name}
+                  src={profile?.profile_picture}
+                  size="lg"
+                />
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">{profile.name}</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{profile.specialty || "Prescriber"}</p>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">{profile?.name}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{profile?.specialty || "Prescriber"}</p>
                 </div>
               </div>
               <button
@@ -65,12 +69,12 @@ export default function DoctorProfile({ prescriberId }) {
             </div>
 
             <div className="px-6 py-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-              <ProfileField label="Name" value={profile.name} />
-              <ProfileField label="Email" value={profile.email} />
-              <ProfileField label="Phone" value={profile.phone_number} />
-              <ProfileField label="Specialty" value={profile.specialty} />
-              <ProfileField label="PMDC Number" value={profile.pmdc_number} />
-              <ProfileField label="Education" value={profile.education} />
+              <ProfileField label="Name" value={profile?.name} />
+              <ProfileField label="Email" value={profile?.email} />
+              <ProfileField label="Phone" value={profile?.phone_number} />
+              <ProfileField label="Specialty" value={profile?.specialty} />
+              <ProfileField label="PMDC Number" value={profile?.pmdc_number} />
+              <ProfileField label="Education" value={profile?.education} />
             </div>
           </>
         )}

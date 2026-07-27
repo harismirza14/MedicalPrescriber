@@ -19,7 +19,7 @@ import AddRX from "../components/organisms/AddRX/AddRX";
 import ExternalRxDrawer from "../components/organisms/ExternalRxDrawer/ExternalRxDrawer";
 import UpdateMedicationDrawer from "../components/organisms/UpdateMedicationDrawer/UpdateMedicationDrawer";
 import PharmacySelectDrawer from "../components/organisms/PharmacySelectDrawer/PharmacySelectDrawer";
-
+import toast from "react-hot-toast";
 export default function Medications({ role, userId, patientId: propPatientId }) {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
@@ -110,7 +110,7 @@ export default function Medications({ role, userId, patientId: propPatientId }) 
 
   const handleFinalGlobalSubmit = async () => {
     if (!editingMedication?.id) {
-      alert("Cannot update: missing prescription ID");
+      toast.error("Cannot update: missing prescription ID");
       return;
     }
     const updates = {

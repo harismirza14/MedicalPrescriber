@@ -17,7 +17,6 @@ export default function LeftSidebar() {
   const patientId = searchParams.get("patientId");
   const isPatientDashboard = location.pathname.includes("/patient-dashboard");
 
-  // State for three-dot menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -31,7 +30,6 @@ export default function LeftSidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Define constant nav items based on role – they do NOT change when viewing a patient
   let navItems = [];
 
   if (role === "patient") {
@@ -46,7 +44,7 @@ export default function LeftSidebar() {
     navItems = [
       { label: "Patients", path: "/select-patient", icon: Users },
       { label: "Schedule", path: "/schedule", icon: Calendar },
-       { label: "Appointments", path: "/appointments", icon: Calendar },
+      { label: "Appointments", path: "/appointments", icon: Calendar },
     ];
   }
 
@@ -55,7 +53,6 @@ export default function LeftSidebar() {
     navigate("/login");
   };
 
-  // Profile path for the avatar click
   const getProfilePath = () => {
     if (role === "patient") return "/my-profile";
     if (role === "doctor") return "/profile";
@@ -63,13 +60,11 @@ export default function LeftSidebar() {
     return "#";
   };
 
-  // Always use the logged-in user's name (doctor, patient, or admin)
   const currentUserName = user?.name || "User";
   const currentUserRole = role || "Guest";
 
   return (
     <aside className="fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-y-auto z-20 transition-colors duration-200">
-      {/* Navigation */}
       <nav className="flex-1 py-4 px-2">
         <ul className="space-y-0.5">
           {navItems.map((item) => {
@@ -95,7 +90,6 @@ export default function LeftSidebar() {
         </ul>
       </nav>
 
-      {/* Bottom: avatar + name (clickable to profile) + three-dot menu for logout */}
       <div className="mt-auto border-t border-gray-200 dark:border-gray-700 p-3 relative" ref={menuRef}>
         {isMenuOpen && (
           <div className="absolute bottom-full left-3 right-3 mb-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg overflow-hidden">
@@ -110,12 +104,15 @@ export default function LeftSidebar() {
         )}
 
         <div className="flex items-center gap-2">
-          {/* Avatar + Name – always shows the logged‑in user */}
           <Link
             to={getProfilePath()}
             className="flex items-center gap-3 flex-1 min-w-0 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            <Avatar name={currentUserName} size="sm" />
+            <Avatar
+              name={currentUserName}
+              src={user?.profile_picture}
+              size="sm"
+            />
             <div className="min-w-0 flex-1 text-left">
               <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                 {currentUserName}
@@ -126,7 +123,6 @@ export default function LeftSidebar() {
             </div>
           </Link>
 
-          {/* Three-dot menu for logout */}
           <button
             type="button"
             onClick={() => setIsMenuOpen((prev) => !prev)}

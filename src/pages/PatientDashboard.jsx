@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import usePatient from "../hooks/usePatient";
 import useCareTeam from "../hooks/useCareTeam";
@@ -8,9 +8,11 @@ import ProfileField from "../components/molecules/ProfileField/ProfileField";
 import AddPatientModal from "../components/organisms/AddPatientModal/AddPatientModal";
 import AddCareTeamMemberModal from "../components/organisms/AddCareTeamMemberModal/AddCareTeamMemberModal";
 import ConfirmationModal from "../components/molecules/ConfirmationModal/ConfirmationModal";
+import PatientBookingDrawer from "../components/organisms/PatientBookingDrawer/PatientBookingDrawer";
 import { deletePatient } from "../api/patientApi";
 import { removeCareTeamMember } from "../api/careTeamApi";
-import { Pencil, Trash2 } from "lucide-react";
+import { fetchPrescriber } from "../api/prescriberApi";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import Medications from "./Medications";
 
 function RoleBadge({ role }) {
@@ -33,6 +35,7 @@ export default function PatientDashboard({ patientId, role, userId }) {
   const navigate = useNavigate();
 
   const activeSection = searchParams.get("tab") || "profile";
+  const doctorId = searchParams.get("doctorId");
 
   const { patient, loading: patientLoading, error: patientError, refetch: refetchPatient } = usePatient(patientId);
   const { careTeam, loading: careTeamLoading, error: careTeamError, refetch: refetchCareTeam } = useCareTeam(patientId);
@@ -46,6 +49,19 @@ export default function PatientDashboard({ patientId, role, userId }) {
   const [removingMember, setRemovingMember] = useState(null);
   const [removeMemberError, setRemoveMemberError] = useState(null);
   const [removeMemberLoading, setRemoveMemberLoading] = useState(false);
+
+  const [doctorProfile, setDoctorProfile] = useState(null);
+  useEffect(() => {
+    if (doctorId) {
+      fetchPrescriber(doctorId)
+        .then(setDoctorProfile)
+        .catch(() => setDoctorProfile(null));
+    } else {
+      setDoctorProfile(null);
+    }
+  }, [doctorId]);
+
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   if (!patientId) {
     return <div className="text-gray-700 dark:text-gray-300">No patient selected.</div>;
@@ -90,17 +106,19 @@ export default function PatientDashboard({ patientId, role, userId }) {
       key: "actions",
       label: "Actions",
       render: (_, row) => (
-        <button
-          type="button"
-          onClick={() => {
-            setRemoveMemberError(null);
-            setRemovingMember(row);
-          }}
-          className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400"
-          title="Remove from care team"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              setRemoveMemberError(null);
+              setRemovingMember(row);
+            }}
+            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400"
+            title="Remove from care team"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -121,20 +139,35 @@ export default function PatientDashboard({ patientId, role, userId }) {
                 <>
                   <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
                     <div className="flex items-center gap-4">
-                      <Avatar name={patient.name} size="lg" />
+                      <Avatar
+                        name={patient.name}
+                        src={patient?.User?.profile_picture || patient?.profile_picture}
+                        size="lg"
+                      />
                       <div>
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white">{patient.name}</h2>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{patient.gender || "N/A"}</p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditPatientOpen(true)}
-                      className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-shrink-0 flex items-center gap-1.5"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      Edit Profile
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {role === "admin" && (
+                        <button
+                          onClick={() => setIsBookingOpen(true)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Book Appointment
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsEditPatientOpen(true)}
+                        className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-shrink-0 flex items-center gap-1.5"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        Edit Profile
+                      </button>
+                    </div>
                   </div>
 
                   <div className="px-6 py-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8">
@@ -254,6 +287,24 @@ export default function PatientDashboard({ patientId, role, userId }) {
           setRemoveMemberError(null);
         }}
       />
+
+      {role === "admin" && (
+        <PatientBookingDrawer
+          isOpen={isBookingOpen}
+          onClose={() => setIsBookingOpen(false)}
+          role="admin"
+          userId={userId}
+          preSelectedDoctorId={doctorId || null}
+          preSelectedDoctorName={doctorProfile?.name}
+          preSelectedDoctorSpecialty={doctorProfile?.specialty}
+          preSelectedPatientId={patientId}
+          preSelectedPatientName={patient?.name}
+          onAppointmentCreated={() => {
+            setIsBookingOpen(false);
+            refetchPatient();
+          }}
+        />
+      )}
     </>
   );
 }

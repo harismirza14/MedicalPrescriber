@@ -4,6 +4,13 @@ import { fetchPatient as fetchPatientApi } from "../api/patientApi";
 const patientCache = new Map();
 
 /**
+ * Clear the entire patient cache – useful on logout to prevent cross‑session data leaks.
+ */
+export function clearPatientCache() {
+  patientCache.clear();
+}
+
+/**
  * @param {string|null} patientId 
  * @returns {{ patient: object|null, loading: boolean, error: string|null, refetch: Function }}
  */

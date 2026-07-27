@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import usePatient from "../hooks/usePatient";
-import Avatar from "../components/atoms/Avatar/Avatar";
 import ProfileField from "../components/molecules/ProfileField/ProfileField";
 import AddPatientModal from "../components/organisms/AddPatientModal/AddPatientModal";
+import Avatar from "../components/atoms/Avatar/Avatar"; 
 import { Pencil } from "lucide-react";
 
 export default function PatientProfile({ patientId }) {
@@ -28,7 +28,11 @@ export default function PatientProfile({ patientId }) {
           <>
             <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-4">
-                <Avatar name={patient.name} size="lg" />
+                <Avatar
+                  name={patient.name}
+                  src={patient?.User?.profile_picture || patient?.profile_picture}
+                  size="lg"
+                />
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white">{patient.name}</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{patient.gender || "N/A"}</p>
@@ -57,7 +61,6 @@ export default function PatientProfile({ patientId }) {
           </>
         )}
       </div>
-
       <AddPatientModal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
