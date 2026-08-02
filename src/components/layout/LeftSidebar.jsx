@@ -3,7 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { logout } from "@/store/authSlice";
 import {
-  Users, Calendar, User, Pill, ArrowLeft, Shield, MoreVertical,
+  Users,
+  Calendar,
+  User,
+  Pill,
+  ArrowLeft,
+  Shield,
+  MoreVertical,
+  MessageSquare, // 👈 1. Imported MessageSquare icon
 } from "lucide-react";
 import usePatient from "@/hooks/usePatient";
 import Avatar from "@/components/atoms/Avatar/Avatar";
@@ -30,6 +37,7 @@ export default function LeftSidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 👈 2. Add Messages navigation option for each role
   let navItems = [];
 
   if (role === "patient") {
@@ -37,14 +45,19 @@ export default function LeftSidebar() {
       { label: "Medications", path: "/medications", icon: Pill },
       { label: "Care Team", path: "/care-team", icon: Users },
       { label: "Appointments", path: "/appointments", icon: Calendar },
+      { label: "Messages", path: "/chat", icon: MessageSquare },
     ];
   } else if (role === "admin") {
-    navItems = [{ label: "Dashboard", path: "/admin", icon: Shield }];
+    navItems = [
+      { label: "Dashboard", path: "/admin", icon: Shield },
+      { label: "Messages", path: "/chat", icon: MessageSquare },
+    ];
   } else if (role === "doctor") {
     navItems = [
       { label: "Patients", path: "/select-patient", icon: Users },
       { label: "Schedule", path: "/schedule", icon: Calendar },
       { label: "Appointments", path: "/appointments", icon: Calendar },
+      { label: "Messages", path: "/chat", icon: MessageSquare },
     ];
   }
 

@@ -1,11 +1,19 @@
 import axios from "axios";
 
+
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || 'http://localhost:3000/api',
   withCredentials: true,
 });
 
-client.interceptors.request.use((config) => {
+
+export const chatClient = axios.create({
+  baseURL: import.meta.env.VITE_CHAT_API_BASE || 'http://localhost:3001/api',
+  withCredentials: true,
+});
+
+
+const attachAuthToken = (config) => {
   try {
     const stored = localStorage.getItem("auth");
     if (stored) {
@@ -16,29 +24,32 @@ client.interceptors.request.use((config) => {
     }
   } catch {}
   return config;
-});
+};
 
-client.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response) {
-      const { status, config } = error.response;
-      const isLoginRequest = config?.url?.includes("/login");
-      if (status === 401 && !isLoginRequest) {
-        localStorage.removeItem("auth");
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
-        }
-      } else if (status === 403) {
-        console.error("[API] 403 Forbidden");
-      } else if (status >= 500) {
-        console.error(`[API] Server error ${status}:`, error.response.data);
+client.interceptors.request.use(attachAuthToken);
+chatClient.interceptors.request.use(attachAuthToken); 
+
+const handleResponseError = (error) => {
+  if (error.response) {
+    const { status, config } = error.response;
+    const isLoginRequest = config?.url?.includes("/login");
+    if (status === 401 && !isLoginRequest) {
+      localStorage.removeItem("auth");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
       }
-    } else {
-      console.error("[API] Network / unknown error:", error.message);
+    } else if (status === 403) {
+      console.error("[API] 403 Forbidden");
+    } else if (status >= 500) {
+      console.error(`[API] Server error ${status}:`, error.response.data);
     }
-    return Promise.reject(error);
+  } else {
+    console.error("[API] Network / unknown error:", error.message);
   }
-);
+  return Promise.reject(error);
+};
+
+client.interceptors.response.use((r) => r, handleResponseError);
+chatClient.interceptors.response.use((r) => r, handleResponseError);
 
 export default client;

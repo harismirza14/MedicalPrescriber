@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { fetchPrescribers } from "../../../api/prescriberApi";
 import { addCareTeamMember } from "../../../api/careTeamApi";
-import Button from "../../atoms/Button/Button"; 
+import Button from "../../atoms/Button/Button";
+
 const ROLE_OPTIONS = ["Primary Physician", "Consultant", "Specialist", "Nurse"];
 const LIMIT = 2;
 
@@ -84,7 +85,7 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // ✅ Prevent page refresh
     if (isSubmittingRef.current || !selectedPrescriber) return;
     isSubmittingRef.current = true;
     setLoading(true);
@@ -126,6 +127,7 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
             </div>
           )}
 
+          {/* ✅ FORM with buttons inside */}
           <form id="add-care-team-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
@@ -176,7 +178,6 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
                         </li>
                       ))}
 
-                     
                       {hasMore && (
                         <li className="px-3 py-2 list-none">
                           <Button
@@ -190,7 +191,6 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
                         </li>
                       )}
 
-                      {/* ─── Summary when all loaded ──────────────────── */}
                       {!hasMore && results.length > 0 && (
                         <li className="px-3 py-2 text-center text-xs text-gray-400 dark:text-gray-500 list-none">
                           {results.length} of {totalCount}{" "}
@@ -222,14 +222,21 @@ export default function AddCareTeamMemberModal({ isOpen, onClose, patientId, onM
                 ))}
               </select>
             </div>
-          </form>
-        </div>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 p-6 flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button variant="solid" disabled={loading || !selectedPrescriber} type="submit" form="add-care-team-form">
-            {loading ? "Adding..." : "Add Member"}
-          </Button>
+            {/* ✅ BUTTONS INSIDE THE FORM */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-end gap-3">
+              <Button variant="ghost" type="button" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                variant="solid"
+                disabled={loading || !selectedPrescriber}
+                type="submit"
+              >
+                {loading ? "Adding..." : "Add Member"}
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

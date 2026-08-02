@@ -18,6 +18,7 @@ import DoctorSchedule from "./pages/DoctorSchedule";
 import PatientDashboard from "./pages/PatientDashboard";
 import PatientProfile from "./pages/PatientProfile";
 import Appointments from "./pages/Appointments";
+import Chat from "./pages/Chat"; // 
 
 function HomeRedirect() {
   const { role } = useSelector((state) => state.auth);
@@ -59,14 +60,12 @@ function PatientSelectorWrapper() {
   return <PatientSelector doctorId={doctorId} />;
 }
 
-// ✅ FIXED: Allow admin to view patient dashboard
 function PatientDashboardWrapper() {
   const { role, user } = useSelector((state) => state.auth);
   const userId = user?.roleSpecificId;
   const [searchParams] = useSearchParams();
   const patientId = searchParams.get("patientId");
 
-  // Allow both doctor and admin
   if (role !== "doctor" && role !== "admin") {
     return <Navigate to="/" replace />;
   }
@@ -100,6 +99,10 @@ function DoctorDetailWrapper() {
 function AppointmentsWrapper() {
   const { role, user } = useSelector((state) => state.auth);
   return <Appointments role={role} id={user?.roleSpecificId} />;
+}
+
+function ChatWrapper() {
+  return <Chat />;
 }
 
 export const router = createBrowserRouter([
@@ -153,6 +156,11 @@ export const router = createBrowserRouter([
       {
         path: "/appointments",
         element: <AppointmentsWrapper />,
+      },
+      // 👈 3. Register /chat route inside layout
+      {
+        path: "/chat",
+        element: <ChatWrapper />,
       },
     ],
   },

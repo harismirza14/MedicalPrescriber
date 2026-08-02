@@ -50,14 +50,13 @@ export default function ProfilePicture({
       setPreview(pictureUrl);
       onUploadSuccess?.(pictureUrl);
 
-      const isSelfUpload =
-        !targetUserId || Number(targetUserId) === Number(currentUserId);
+      const isSelfUpload = !targetUserId || Number(targetUserId) === Number(currentUserId);
 
       if (isSelfUpload) {
         dispatch(updateUser({ profile_picture: pictureUrl }));
       }
 
-      if (targetUserId) {
+      if (targetUserId && !isSelfUpload) {
         window.dispatchEvent(new CustomEvent('profile-picture-updated', {
           detail: { userId: targetUserId,
              roleSpecificId: targetRoleSpecificId,

@@ -11,6 +11,8 @@ export default function AppLayout() {
   const { role } = useSelector((state) => state.auth);
   const showRightSidebar = shouldShowRightSidebar(location.pathname, role);
 
+  const isChatRoute = location.pathname === "/chat";
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Header />
@@ -22,7 +24,7 @@ export default function AppLayout() {
           showRightSidebar ? "mr-64" : "mr-0"
         }`}
       >
-        <div className="px-4 py-4">
+        <div className={isChatRoute ? "h-[calc(100vh-4rem)] overflow-hidden" : "px-4 py-4"}>
           <Outlet />
         </div>
       </main>

@@ -25,14 +25,12 @@ export default function RightSidebar() {
   const isAdminDoctorView =
     role === "admin" && location.pathname.startsWith("/admin/doctor/");
 
-  // ─── Patient data ──────────────────────────────────────────────
   const { patient, refetch: refetchPatient } = usePatient(
     visible && (role === "doctor" || role === "admin") && !isAdminDoctorView
       ? patientId
       : null,
   );
 
-  // ─── Doctor profile (admin view) ──────────────────────────────
   const [doctorProfile, setDoctorProfile] = useState(null);
   const [doctorProfileLoading, setDoctorProfileLoading] = useState(false);
 
@@ -51,6 +49,8 @@ export default function RightSidebar() {
   }, [fetchDoctorProfile]);
 
   useEffect(() => {
+    if (!visible) return null;
+
     const handleProfilePictureUpdate = (e) => {
       const { roleSpecificId } = e.detail;
       if (patientId && String(roleSpecificId) === String(patientId)) {
@@ -71,7 +71,6 @@ export default function RightSidebar() {
         handleProfilePictureUpdate,
       );
   }, [patientId, prescriberId, refetchPatient, fetchDoctorProfile]);
-  if (!visible) return null;
 
   const calculateAge = (dob) => {
     if (!dob) return "N/A";

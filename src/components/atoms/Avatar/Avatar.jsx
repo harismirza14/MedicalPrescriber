@@ -8,11 +8,11 @@ const SIZE_CLASSES = {
 };
 
 const COLOR_CLASSES = {
-  blue: "bg-blue-600",
-  gray: "bg-gray-400",
-  green: "bg-green-600",
-  red: "bg-red-600",
-  purple: "bg-purple-600",
+  blue: "bg-gradient-to-br from-blue-500 to-purple-600",
+  gray: "bg-gradient-to-br from-gray-400 to-gray-500",
+  green: "bg-gradient-to-br from-green-500 to-emerald-600",
+  red: "bg-gradient-to-br from-red-500 to-rose-600",
+  purple: "bg-gradient-to-br from-purple-500 to-pink-600",
 };
 
 function getInitials(name) {
