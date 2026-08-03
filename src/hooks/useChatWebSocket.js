@@ -13,7 +13,7 @@ export default function useChatWebSocket() {
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const reconnectAttempts = useRef(0);
-  const shouldReconnect = useRef(true); // allow disabling reconnect on auth errors
+  const shouldReconnect = useRef(true); 
 
   const connect = useCallback(() => {
     const stored = JSON.parse(localStorage.getItem("auth") || "null");
@@ -95,7 +95,6 @@ export default function useChatWebSocket() {
 
     ws.onclose = (event) => {
       console.log("🔌 WebSocket disconnected");
-      // If the server rejected the token, stop reconnecting
       if (event.code === 1008) {
         console.warn(
           "Server rejected connection (invalid token). Stopping reconnection.",
@@ -117,10 +116,8 @@ export default function useChatWebSocket() {
     };
 
     ws.onerror = (err) => {
-      // Only log as warning during the initial connection phase
-      // The actual error is handled by onclose.
       console.warn("⚠️ WebSocket connection error (will retry):", err);
-      ws.close(); // triggers onclose
+      ws.close(); 
     };
   }, [dispatch]);
 
@@ -136,12 +133,12 @@ export default function useChatWebSocket() {
     };
   }, [connect]);
 
-  const sendMessage = useCallback((conversationId, body, isUrgent = false) => {
+  const sendMessage = useCallback((conversationId, body,) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
           event: "send_message",
-          data: { conversationId, body, isUrgent },
+          data: { conversationId, body,},
         }),
       );
       return true;

@@ -57,7 +57,6 @@ export default function ChatWindow({ conversation }) {
     }
   }, [messages, conversation?.id, dispatch, markRead]);
 
-  // Fetch online status for direct conversations
   useEffect(() => {
     if (!conversation?.id || conversation.type !== "direct") {
       setOtherUserOnline(false);
@@ -107,7 +106,7 @@ export default function ChatWindow({ conversation }) {
             No conversation selected
           </h3>
           <p className="text-sm text-slate-400">
-            Choose a chat from the sidebar
+            Choose a chat to start messaging. You can also start a new chat by clicking the "New Chat" button in the chat list.
           </p>
         </div>
       </div>
@@ -338,11 +337,9 @@ export default function ChatWindow({ conversation }) {
 
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
-                  m.isUrgent
-                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white"
-                    : isMe
-                      ? "bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-blue-500/20"
-                      : "bg-white text-slate-800 shadow-slate-200/50 dark:bg-slate-800 dark:text-slate-100 dark:shadow-slate-700/30"
+                  isMe
+                    ? "bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-blue-500/20"
+                    : "bg-white text-slate-800 shadow-slate-200/50 dark:bg-slate-800 dark:text-slate-100 dark:shadow-slate-700/30"
                 }`}
               >
                 {m.body}

@@ -54,8 +54,6 @@ const chatSlice = createSlice({
     messageReceived: (state, action) => {
       const msg = action.payload;
       const convoId = msg.conversationId;
-
-      // Add message to conversation's message list
       const list = state.messagesByConversation[convoId] || [];
       if (!list.some((existing) => existing.id === msg.id)) {
         state.messagesByConversation[convoId] = [...list, msg];
