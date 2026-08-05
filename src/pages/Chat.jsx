@@ -77,7 +77,7 @@ export default function Chat() {
                 No conversation selected
               </h3>
               <p className="text-sm">
-                Choose a chat from the sidebar to start messaging
+                Choose a chat to start messaging.
               </p>
             </div>
           )}

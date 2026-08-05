@@ -2,7 +2,7 @@ import React from "react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import ChatWindow from "./ChatWindow";
-import chatClient from "@/api/client";
+import {chatClient} from "@/api/client";
 
 // --- Mock Data ---
 const mockMessages = [

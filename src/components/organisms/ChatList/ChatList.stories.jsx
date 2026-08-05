@@ -2,7 +2,7 @@ import React from "react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import ChatList from "./ChatList";
-import chatClient from "@/api/client";
+import {chatClient} from "@/api/client";
 import { fetchConversations } from "@/store/chatSlice";
 
 // --- Mock Data ---
@@ -15,8 +15,14 @@ const mockConversations = [
       User: { name: "Maria Khan", profile_picture: null },
     },
     memberships: [
-      { userId: 1, user: { name: "Maria Khan", role: "patient", profile_picture: null } },
-      { userId: 2, user: { name: "Dr. Ali", role: "doctor", profile_picture: null } },
+      {
+        userId: 1,
+        user: { name: "Maria Khan", role: "patient", profile_picture: null },
+      },
+      {
+        userId: 2,
+        user: { name: "Dr. Ali", role: "doctor", profile_picture: null },
+      },
     ],
     unreadCount: 2,
   },
@@ -25,8 +31,14 @@ const mockConversations = [
     type: "direct",
     updatedAt: "2026-08-03T09:00:00Z",
     memberships: [
-      { userId: 1, user: { name: "Dr. Smith", role: "doctor", profile_picture: null } },
-      { userId: 3, user: { name: "Dr. Jones", role: "doctor", profile_picture: null } },
+      {
+        userId: 1,
+        user: { name: "Dr. Smith", role: "doctor", profile_picture: null },
+      },
+      {
+        userId: 3,
+        user: { name: "Dr. Jones", role: "doctor", profile_picture: null },
+      },
     ],
     unreadCount: 0,
   },
@@ -35,8 +47,14 @@ const mockConversations = [
     type: "direct",
     updatedAt: "2026-08-02T21:00:00Z",
     memberships: [
-      { userId: 1, user: { name: "Patient X", role: "patient", profile_picture: null } },
-      { userId: 4, user: { name: "Dr. Lee", role: "doctor", profile_picture: null } },
+      {
+        userId: 1,
+        user: { name: "Patient X", role: "patient", profile_picture: null },
+      },
+      {
+        userId: 4,
+        user: { name: "Dr. Lee", role: "doctor", profile_picture: null },
+      },
     ],
     unreadCount: 5,
   },
@@ -46,29 +64,50 @@ const mockConversations = [
 const createMockStore = (initialState) => {
   return configureStore({
     reducer: {
-      chat: (state = initialState.chat || { conversations: [], messagesByConversation: {}, activeConversationId: null }) => state,
-      auth: (state = initialState.auth || { role: "admin", user: { id: "admin1" } }) => state,
+      chat: (
+        state = initialState.chat || {
+          conversations: [],
+          messagesByConversation: {},
+          activeConversationId: null,
+        },
+      ) => state,
+      auth: (
+        state = initialState.auth || { role: "admin", user: { id: "admin1" } },
+      ) => state,
     },
     preloadedState: initialState,
   });
 };
 
-// --- Mock API calls ---
+// --- Robust Mock API calls ---
 const mockApiCalls = (conversations = mockConversations) => {
   const originalGet = chatClient.get;
-  chatClient.get = (url) => {
-    if (url === "/chat/conversations") {
+  chatClient.get = (url, config) => {
+    // Match any URL that ends with /chat/conversations (or contains it)
+    if (url.includes("/chat/conversations")) {
       return Promise.resolve({ data: conversations });
     }
-    return originalGet(url);
+    // Also mock /chat/admin if needed
+    if (url.includes("/chat/admin")) {
+      return Promise.resolve({ data: { adminId: 999 } });
+    }
+    return originalGet(url, config);
   };
   return () => {
     chatClient.get = originalGet;
   };
 };
 
-// --- Decorator: Redux Provider ---
+// --- Decorator: Redux Provider with dummy auth ---
 const withStore = (initialState) => (Story) => {
+  // Set dummy token in localStorage to avoid 401
+  localStorage.setItem(
+    "auth",
+    JSON.stringify({
+      token: "dummy-token",
+      user: { user_id: 1, role: "admin" },
+    }),
+  );
   const store = createMockStore(initialState);
   return (
     <Provider store={store}>
@@ -84,7 +123,11 @@ export default {
   decorators: [
     withStore({
       auth: { role: "admin", user: { id: "admin1" } },
-      chat: { conversations: mockConversations, messagesByConversation: {}, activeConversationId: null },
+      chat: {
+        conversations: mockConversations,
+        messagesByConversation: {},
+        activeConversationId: null,
+      },
     }),
   ],
   argTypes: {
@@ -110,7 +153,11 @@ export const EmptyState = {
   decorators: [
     withStore({
       auth: { role: "admin", user: { id: "admin1" } },
-      chat: { conversations: [], messagesByConversation: {}, activeConversationId: null },
+      chat: {
+        conversations: [],
+        messagesByConversation: {},
+        activeConversationId: null,
+      },
     }),
   ],
   loaders: [async () => mockApiCalls([])],
@@ -124,7 +171,11 @@ export const AdminView = {
   decorators: [
     withStore({
       auth: { role: "admin", user: { id: "admin1" } },
-      chat: { conversations: mockConversations, messagesByConversation: {}, activeConversationId: null },
+      chat: {
+        conversations: mockConversations,
+        messagesByConversation: {},
+        activeConversationId: null,
+      },
     }),
   ],
   loaders: [async () => mockApiCalls(mockConversations)],
@@ -138,7 +189,11 @@ export const DoctorView = {
   decorators: [
     withStore({
       auth: { role: "doctor", user: { id: "doc1" } },
-      chat: { conversations: mockConversations, messagesByConversation: {}, activeConversationId: null },
+      chat: {
+        conversations: mockConversations,
+        messagesByConversation: {},
+        activeConversationId: null,
+      },
     }),
   ],
   loaders: [async () => mockApiCalls(mockConversations)],
@@ -152,7 +207,11 @@ export const PatientView = {
   decorators: [
     withStore({
       auth: { role: "patient", user: { id: "patient1" } },
-      chat: { conversations: mockConversations, messagesByConversation: {}, activeConversationId: null },
+      chat: {
+        conversations: mockConversations,
+        messagesByConversation: {},
+        activeConversationId: null,
+      },
     }),
   ],
   loaders: [async () => mockApiCalls(mockConversations)],
